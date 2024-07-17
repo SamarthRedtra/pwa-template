@@ -10,7 +10,7 @@
           </div>
           <div class="bg-white rounded-lg w-80 h-68 mt-4">
             <div class="p-4">
-              <Input type="email" placeholder="jane@example.com" v-model="email" class="p-2" />
+              <Input type="email" placeholder="jane@example.com" v-model="email" class="p-2" label="Email" />
               <div class="p-2">
                 <Button variant="solid" class="w-full">
                   Reset Password
@@ -26,16 +26,45 @@
     </div>
   </template>
   
-  <script setup>
-  import { ref } from 'vue';
-  import img1 from '../assets/Images/fpwa.jpg';
-  import { Input, Button } from 'frappe-ui';
+<script setup>
+import { ref, computed } from 'vue';
+import { Input, Button } from 'frappe-ui';
+
+const imageSrc = ref('');
+const email = ref('');
+const currentURL = ref(window.location.href);
+const baseURL = computed(() => {
+    const url = new URL(currentURL.value);
+      return `${url.protocol}//${url.hostname}`;
+    });
+baseURL.value = baseURL.value+':8001/assets';
+const modifiedURL = ref(`${baseURL.value}:8001/assets`);
+
+
+const myHeaders = new Headers();
+myHeaders.append("Cookie", "full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=");
+
+const requestOptions = {
+  method: "GET",
+  headers: myHeaders,
+  redirect: "follow"
+};
+
+fetch(modifiedURL.value, requestOptions)
+  .then((response) => response.text())
+  .then((result) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(result, 'text/html');
+
+    const meta = doc.querySelector('meta[name="generator"]');
+
+    const link = doc.querySelector('link[rel="shortcut icon"]');
+    if (link) {
+      imageSrc.value = link.href; 
+    }
+  })
+  .catch((error) => console.error(error));
+</script>
   
-  const imageSrc = ref(img1);
-  const email = ref('');
-  </script>
-  
-  <style scoped>
-  /* Additional styles can be added here */
-  </style>
-  
+<style scoped>
+</style>
