@@ -25,7 +25,7 @@
               </FormControl>
             <div v-if="formSubmitted && !emailValid" class="text-red-500 text-xs pl-2">Enter email !</div>
             <div class="p-2">
-              <Button variant="solid" class="w-full" @click="resetPassword">
+              <Button :loading="loading" variant="solid" class="w-full" @click="resetPassword">
                 Reset Password
               </Button>
             </div>
@@ -48,12 +48,13 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { Input, Button, FormControl, FeatherIcon  } from 'frappe-ui';
+import { Input, Button, FormControl, FeatherIcon } from 'frappe-ui';
 
 const imageSrc = ref('');
 const email = ref('');
 const responsemessage = ref('');
 const formSubmitted = ref(false);
+const loading = ref(false);
 const emailValid = computed(() => !!email.value);
 
 const currentURL = ref(window.location.href);
@@ -92,6 +93,7 @@ const resetPassword = () => {
   formSubmitted.value = true;
   if (!emailValid.value) return;
 
+  loading.value = true; // Set loading to true
   const Header = new Headers();
   Header.append("Content-Type", "application/json");
 
@@ -110,6 +112,7 @@ const resetPassword = () => {
   fetch(modifiedForgetPasswordURL.value, request)
     .then(response => {
       response.text().then(result => {
+        loading.value = false;
         if (response.status === 200) {
           responsemessage.value = `Password reset instructions have been sent to your email`;
           console.log(result);
@@ -129,7 +132,10 @@ const resetPassword = () => {
         }, 1000);
       });
     })
-    .catch(error => console.error(error));
+    .catch(error => {
+      loading.value = false; 
+      console.error(error);
+    });
 };
 
 fetchLogo();
