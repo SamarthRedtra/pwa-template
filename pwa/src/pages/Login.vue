@@ -8,31 +8,47 @@
         <div class="bg-white rounded-lg w-80 h-68 mt-4">
           <div class="p-4">
             <form class="flex flex-col space-y-2 w-full" @submit.prevent="submit">
-              <Input
+              <FormControl
                 required
-                name="email"
                 type="text"
+                label="User ID"
+                name="email"
                 v-model="email"
                 placeholder="johndoe@email.com"
-                label="User ID"
                 class="p-2"
-              />
-              <div v-if="formSubmitted && !emailValid" class="text-red-500 text-xs pl-2">Enter a valid email</div>
-              <div class="relative">
-                <Input
-                  required
-                  name="password"
-                  :type="passwordFieldType"
-                  v-model="password"
-                  placeholder="••••••"
-                  label="Password"
-                  class="p-2 w-full"
-                />
-                <span @click="togglePasswordVisibility" class="absolute right-2 top-8 cursor-pointer text-gray-600 text-sm p-2">{{ passwordToggleText }}</span>
+              >
+                <template #prefix>
+                  <FeatherIcon class="w-4" name="mail" />
+                </template>
+              </FormControl>
+              <div v-if="formSubmitted && !emailValid" class="text-red-500 text-xs pl-2">
+                Enter a valid email
               </div>
-              <div v-if="formSubmitted && !passwordValid" class="text-red-500 text-xs pl-2">Enter password</div>
+              <div class="relative">
+                <FormControl
+                  required
+                  label="Password"
+                  name="password"
+                  v-model="password"
+                  :type="passwordFieldType"
+                  placeholder="••••••"
+                  class="p-2 w-full"
+                >
+                  <template #prefix>
+                    <FeatherIcon class="w-4" name="lock" />
+                  </template>
+                </FormControl>
+                <span @click="togglePasswordVisibility" class="absolute right-2 top-7 cursor-pointer text-gray-600 text-sm p-2">
+                  {{ passwordToggleText }}
+                </span>
+              </div>
+              <div v-if="formSubmitted && !passwordValid" class="text-red-500 text-xs pl-2">
+                Enter password
+              </div>
               <div class="w-full">
-                <router-link to="/account/forget-password" class="pb-1 text-xs text-gray-600 justify-end flex pr-2 hover:underline">Forgot Password?</router-link>
+                <router-link to="/account/forget-password" class="pb-1 text-xs text-gray-600 justify-end flex pr-2 hover:underline">
+                  Forgot Password?
+                </router-link>
               </div>
               <Button :loading="session.login.loading" variant="solid" class="w-full">Login</Button>
             </form>
@@ -56,7 +72,7 @@
 </template>
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
-import { Input, Button } from 'frappe-ui';
+import { Button, FormControl, FeatherIcon } from 'frappe-ui';
 import { session } from '../data/session';
 
 const email = ref('');
@@ -66,9 +82,7 @@ const loginSuccess = ref(false);
 const loginError = ref(false);
 const formSubmitted = ref(false);
 
-const emailValid = computed(() => {
-  return email.value.includes('@') || email.value === 'Administrator';
-});
+const emailValid = computed(() => email.value.includes('@') || email.value === 'Administrator');
 const passwordValid = computed(() => !!password.value);
 
 const passwordFieldType = computed(() => (showPassword.value ? 'text' : 'password'));

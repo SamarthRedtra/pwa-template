@@ -10,7 +10,19 @@
         </div>
         <div class="bg-white rounded-lg w-80 h-68 mt-4">
           <div class="p-4">
-            <Input type="email" placeholder="jane@example.com" v-model="email" class="p-2" label="Email" />
+            <FormControl
+                required
+                type="text"
+                label="Email"
+                name="email"
+                v-model="email"
+                placeholder="johndoe@email.com"
+                class="p-2"
+              >
+                <template #prefix>
+                  <FeatherIcon class="w-4" name="mail" />
+                </template>
+              </FormControl>
             <div v-if="formSubmitted && !emailValid" class="text-red-500 text-xs pl-2">Enter email !</div>
             <div class="p-2">
               <Button variant="solid" class="w-full" @click="resetPassword">
@@ -36,7 +48,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { Input, Button } from 'frappe-ui';
+import { Input, Button, FormControl, FeatherIcon  } from 'frappe-ui';
 
 const imageSrc = ref('');
 const email = ref('');
