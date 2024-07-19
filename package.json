@@ -1,0 +1,15 @@
+{
+  "name": "pwa_template",
+  "version": "1.0.0",
+  "description": "Mobile App Template for PWA Builder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "cd pwa && yarn install",
+    "dev": "cd pwa && yarn dev",
+    "build": "cd pwa && yarn build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
