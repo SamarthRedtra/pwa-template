@@ -27,7 +27,7 @@
   </div>
   <div class="fixed bottom-0 flex justify-end w-full sm:w-96 pr-3">
     <transition name="fade">
-      <div v-if="responsemessage" class="w-full sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-blue-300 rounded-lg opacity-100 font-regular animate-slide-in-right animate-fade-out">
+      <div v-if="responsemessage" class="w-full sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-blue-500 rounded-lg opacity-100 font-regular animate-slide-in-right animate-fade-out">
         {{ responsemessage }}
       </div>
     </transition>

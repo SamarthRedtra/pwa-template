@@ -43,12 +43,12 @@
   </div>
   <div class="fixed bottom-0 flex justify-end w-full sm:w-96">
     <transition name="fade">
-      <div v-if="loginSuccess" class="w-full sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-green-400 rounded-lg opacity-100 font-regular animate-slide-in-right animate-fade-out">
+      <div v-if="loginSuccess" class="w-full sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-green-500 rounded-lg opacity-100 font-regular animate-slide-in-right animate-fade-out">
         Login successfully
       </div>
     </transition>
     <transition name="fade">
-      <div v-if="loginError" class="w-full sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-red-400 rounded-lg opacity-100 font-regular animate-slide-in-right animate-fade-out">
+      <div v-if="loginError" class="w-full sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-red-500 rounded-lg opacity-100 font-regular animate-slide-in-right animate-fade-out">
         Login failed
       </div>
     </transition>
@@ -86,14 +86,9 @@ const submit = (e: Event) => {
   session.login.submit({
     email: email.value,
     password: password.value,
-  }).then((result) => {
-    if (result.message === "Logged In") {
+  }).then((response) => {
       loginSuccess.value = true;
       loginError.value = false;
-    } else {
-      loginSuccess.value = false;
-      loginError.value = true;
-    }
     setTimeout(() => {
       loginSuccess.value = false;
       loginError.value = false;

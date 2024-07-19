@@ -1,7 +1,6 @@
 import router from '@/router'
 import { computed, reactive } from 'vue'
 import { createResource } from 'frappe-ui'
-
 import { userResource } from './user'
 
 export function sessionUser() {
