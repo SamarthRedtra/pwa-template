@@ -7,21 +7,35 @@
         </div>
         <div class="bg-white rounded-lg w-80 h-68 mt-4">
           <div class="p-4">
-            <Input type="email" placeholder="jane@example.com" v-model="email" class="p-2" label="Email"/>
-            <div v-if="formSubmitted && !emailValid" class="text-red-500 text-xs pl-2">Enter a valid email</div>
-            <div class="relative">
-              <Input :type="passwordFieldType" placeholder="...." v-model="password" class="p-2 w-full" label="Password" />
-              <span @click="togglePasswordVisibility" class="absolute right-2 top-9 cursor-pointer text-gray-600 text-sm p-2">{{ passwordToggleText }}</span>
-            </div>
-            <div v-if="formSubmitted && !passwordValid" class="text-red-500 text-xs pl-2">Enter password</div>
-            <div class="w-full">
-              <router-link to="/forget-password" class="pb-1 text-xs text-gray-600 justify-end flex pr-2 hover:underline">Forgot Password?</router-link>
-            </div>
-            <div class="p-2">
-              <Button variant="solid" class="w-full" @click="login">
-                Login
-              </Button>
-            </div>
+            <form class="flex flex-col space-y-2 w-full" @submit.prevent="submit">
+              <Input
+                required
+                name="email"
+                type="text"
+                v-model="email"
+                placeholder="johndoe@email.com"
+                label="User ID"
+                class="p-2"
+              />
+              <div v-if="formSubmitted && !emailValid" class="text-red-500 text-xs pl-2">Enter a valid email</div>
+              <div class="relative">
+                <Input
+                  required
+                  name="password"
+                  :type="passwordFieldType"
+                  v-model="password"
+                  placeholder="••••••"
+                  label="Password"
+                  class="p-2 w-full"
+                />
+                <span @click="togglePasswordVisibility" class="absolute right-2 top-8 cursor-pointer text-gray-600 text-sm p-2">{{ passwordToggleText }}</span>
+              </div>
+              <div v-if="formSubmitted && !passwordValid" class="text-red-500 text-xs pl-2">Enter password</div>
+              <div class="w-full">
+                <router-link to="/account/forget-password" class="pb-1 text-xs text-gray-600 justify-end flex pr-2 hover:underline">Forgot Password?</router-link>
+              </div>
+              <Button :loading="session.login.loading" variant="solid" class="w-full">Login</Button>
+            </form>
           </div>
         </div>
       </div>
@@ -40,25 +54,11 @@
     </transition>
   </div>
 </template>
-
-<script setup>
+<script lang="ts" setup>
 import { ref, computed } from 'vue';
-import { Input, Button, createListResource } from 'frappe-ui';
+import { Input, Button } from 'frappe-ui';
+import { session } from '../data/session';
 
-let todos = createListResource({
-  doctype: 'ToDo',
-  fields: ['name'],
-});
-
-todos.reload().then(() => {
-  let dataArray = todos.data;
-  if (dataArray.length > 0) {
-    let firstItem = dataArray[0];
-    console.log(firstItem.name);
-  }
-});
-
-const imageSrc = ref('');  
 const email = ref('');
 const password = ref('');
 const showPassword = ref(false);
@@ -71,37 +71,6 @@ const emailValid = computed(() => {
 });
 const passwordValid = computed(() => !!password.value);
 
-const currentURL = ref(window.location.href);
-const baseURL = computed(() => {
-  const url = new URL(currentURL.value);
-  return `${url.protocol}//${url.hostname}`;
-});
-baseURL.value = baseURL.value + ':8001/assets';
-const modifiedLogoURL = ref(`${baseURL.value}:8001/assets`);
-const modifiedLoginURL = ref(`${baseURL.value}:8001/Login`);
-
-const myHeaders = new Headers();
-myHeaders.append("Cookie", "full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=");
-
-const requestOptions = {
-  method: "GET",
-  headers: myHeaders,
-  redirect: "follow"
-};
-
-fetch(modifiedLogoURL.value, requestOptions)
-  .then((response) => response.text())
-  .then((result) => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(result, 'text/html');
-
-    const link = doc.querySelector('link[rel="shortcut icon"]');
-    if (link) {
-      imageSrc.value = link.href; 
-    }
-  })
-  .catch((error) => console.error(error));
-
 const passwordFieldType = computed(() => (showPassword.value ? 'text' : 'password'));
 const passwordToggleText = computed(() => (showPassword.value ? 'Hide' : 'Show'));
 
@@ -109,53 +78,66 @@ const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
 };
 
-const login = () => {
+const submit = (e: Event) => {
   formSubmitted.value = true;
 
   if (!emailValid.value || !passwordValid.value) return;
 
-  const Header = new Headers();
-  Header.append("Content-Type", "application/json");
-
-  const raw = JSON.stringify({
-    "cmd": "login",
-    "usr": email.value,
-    "pwd": password.value
-  });
-
-  const request = {
-    method: "POST",
-    headers: Header,
-    body: raw,
-    redirect: "follow"
-  };
-
-  fetch(modifiedLoginURL.value, request)
-    .then((response) => response.json())
-    .then((result) => {
-      if (result.message === "Logged In") {
-        loginSuccess.value = true;
-        loginError.value = false;
-      } else {
-        loginSuccess.value = false;
-        loginError.value = true;
-      }
-      setTimeout(() => {
-        loginSuccess.value = false;
-        loginError.value = false;
-      }, 1000); 
-    })
-    .catch((error) => {
-      console.error(error);
+  session.login.submit({
+    email: email.value,
+    password: password.value,
+  }).then((result) => {
+    if (result.message === "Logged In") {
+      loginSuccess.value = true;
+      loginError.value = false;
+    } else {
       loginSuccess.value = false;
       loginError.value = true;
-      setTimeout(() => {
-        loginSuccess.value = false;
-        loginError.value = false;
-      }, 1000);
-    });
+    }
+    setTimeout(() => {
+      loginSuccess.value = false;
+      loginError.value = false;
+    }, 1000); 
+  }).catch((error) => {
+    console.error(error);
+    loginSuccess.value = false;
+    loginError.value = true;
+    setTimeout(() => {
+      loginSuccess.value = false;
+      loginError.value = false;
+    }, 1000);
+  });
 };
-</script>
 
+const imageSrc = ref('');
+const currentURL = ref(window.location.href);
+const baseURL = computed(() => {
+  const url = new URL(currentURL.value);
+  return `${url.protocol}//${url.hostname}`;
+});
+
+const modifiedLogoURL = computed(() => `${baseURL.value}:8001/assets`);
+
+const myHeaders = new Headers();
+myHeaders.append("Cookie", "full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=");
+
+const requestOptions: RequestInit = {
+  method: "GET",
+  headers: myHeaders,
+  redirect: "follow" as RequestRedirect
+};
+
+fetch(modifiedLogoURL.value, requestOptions)
+  .then((response) => response.text())
+  .then((result) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(result, 'text/html');
+    const link = doc.querySelector('link[rel="shortcut icon"]') as HTMLLinkElement;
+    if (link) {
+      imageSrc.value = link.href; 
+    }
+  })
+  .catch((error) => console.error(error));
+</script>
 <style scoped>
 </style>

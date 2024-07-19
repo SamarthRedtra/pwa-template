@@ -1,23 +1,45 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Login from '@/pages/Login.vue';
-import ForgetPassword from '@/pages/ForgetPassword.vue';
+import { session } from './data/session';
+import { userResource } from '@/data/user';
 
 const routes = [
   {
     path: '/',
-    name: 'Login',
-    component: Login,
+    name: 'Home',
+    component: () => import('@/pages/Home.vue'),
   },
   {
-    path: '/forget-password',
+    name: 'Login',
+    path: '/account/login',
+    component: () => import('@/pages/Login.vue'),
+  },
+  {
+    path: '/account/forget-password',
     name: 'ForgetPassword',
-    component: ForgetPassword,
+    component: () => import('@/pages/ForgetPassword.vue'),
   },
 ];
 
 const router = createRouter({
-  history: createWebHistory('/frontend'),
+  history: createWebHistory('/pwa'),
   routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+  let isLoggedIn = session.isLoggedIn;
+  try {
+    await userResource.promise;
+  } catch (error) {
+    isLoggedIn = false;
+  }
+
+  if (to.name === 'Login' && isLoggedIn) {
+    next({ name: 'Home' });
+  } else if (to.name === 'ForgetPassword' || to.name === 'Login' || isLoggedIn) {
+    next();
+  } else {
+    next({ name: 'Login' });
+  }
 });
 
 export default router;
