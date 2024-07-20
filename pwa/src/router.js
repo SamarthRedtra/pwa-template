@@ -18,6 +18,11 @@ const routes = [
     name: 'ForgetPassword',
     component: () => import('@/pages/ForgetPassword.vue'),
   },
+  {
+    path: '/account/signup',
+    name: 'SignUp',
+    component: () => import('@/pages/SignUp.vue'),
+  },
 ];
 
 const router = createRouter({
@@ -35,7 +40,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.name === 'Login' && isLoggedIn) {
     next({ name: 'Home' });
-  } else if (to.name === 'ForgetPassword' || to.name === 'Login' || isLoggedIn) {
+  } else if (to.name === 'ForgetPassword' || to.name === 'Login' || to.name === 'SignUp' || isLoggedIn) {
     next();
   } else {
     next({ name: 'Login' });

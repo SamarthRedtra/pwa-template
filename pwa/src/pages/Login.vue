@@ -5,7 +5,7 @@
         <div class="w-full object-center justify-center flex">
           <img :src="imageSrc" class="w-16 h-16 object-cover rounded-lg" />
         </div>
-        <div class="bg-white rounded-lg w-80 h-68 mt-4">
+        <div class="bg-white rounded-lg w-80 h-76 mt-4">
           <div class="p-4">
             <form class="flex flex-col space-y-2 w-full" @submit.prevent="submit">
               <FormControl
@@ -51,6 +51,10 @@
                 </router-link>
               </div>
               <Button :loading="session.login.loading" variant="solid" class="w-full">Login</Button>
+              <div class="flex justify-center">
+                <p class="text-xs p-1 text-gray-600">or</p>
+              </div>
+              <Button variant="subtle" class="w-full" @click="goToSignUp">Sign up</Button>
             </form>
           </div>
         </div>
@@ -70,10 +74,14 @@
     </transition>
   </div>
 </template>
+
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { Button, FormControl, FeatherIcon } from 'frappe-ui';
 import { session } from '../data/session';
+
+const router = useRouter();
 
 const email = ref('');
 const password = ref('');
@@ -118,6 +126,10 @@ const submit = (e: Event) => {
   });
 };
 
+const goToSignUp = () => {
+  router.push('/account/signup');
+};
+
 const imageSrc = ref('');
 const currentURL = ref(window.location.href);
 const baseURL = computed(() => {
@@ -148,5 +160,6 @@ fetch(modifiedLogoURL.value, requestOptions)
   })
   .catch((error) => console.error(error));
 </script>
+
 <style scoped>
 </style>
