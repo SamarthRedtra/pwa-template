@@ -1,5 +1,8 @@
-export default class Form {
+import EventEmitter from "./eventemiitor"
+
+export default class Form extends EventEmitter{
   constructor(doctype, name = null) {
+	super()
     this.doctype = doctype
     this.name = name
     this.fields = [
@@ -36,6 +39,12 @@ export default class Form {
       },
     ]
     this.dirty = false
+
+	this.on("name", (value) => {
+		console.log("Name changed to: ", value);
+        this.dirty = true;
+	})
+
   }
   getValue(fieldname){}
   setValue(fieldname, value){}

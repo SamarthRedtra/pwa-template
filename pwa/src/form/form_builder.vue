@@ -1,6 +1,6 @@
 <template>
   <div v-for="field in frm.fields">
-	<component :is="fieldMap[field.fieldtype]" :field="field" :key="field.fieldname"></component>
+	<component :is="fieldMap[field.fieldtype]" :field="field" :frm="frm" :key="field.fieldname"></component>
   </div>
 </template>
 
