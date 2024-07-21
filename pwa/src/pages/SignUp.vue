@@ -85,11 +85,11 @@
       </transition>
     </div>
   </template>
-  
+
   <script setup>
   import { ref, computed, reactive, watch } from 'vue';
   import { Input, Button, FormControl, FeatherIcon, createListResource } from 'frappe-ui';
-  
+
   const imageSrc = ref('');
   const username = ref('');
   const email = ref('');
@@ -98,10 +98,10 @@
   const responseMessage = ref('');
   const formSubmitted = ref(false);
   const loading = ref(false);
-  
+
   const emailValid = computed(() => /\S+@\S+\.\S+/.test(email.value));
   const passwordsMatch = computed(() => password.value === confirmPassword.value);
-  
+
   const currentURL = ref(window.location.href);
   const baseURL = computed(() => {
     const url = new URL(currentURL.value);
@@ -109,7 +109,7 @@
   });
   const modifiedLogoURL = ref(`${baseURL.value}/assets`);
   const modifiedSignUpURL = ref(`${baseURL.value}/`);
-  
+
   const User = reactive(createListResource({
     doctype: 'User',
     fields: ['*'],
@@ -120,22 +120,22 @@
     start: 0,
     pageLength: 5,
   }));
-  
+
   watch(email, (newEmail) => {
     User.filters.name = newEmail;
     User.reload();
   });
-  
+
   const fetchLogo = () => {
     const myHeaders = new Headers();
     myHeaders.append("Cookie", "full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=");
-  
+
     const requestOptions = {
       method: "GET",
       headers: myHeaders,
       redirect: "follow"
     };
-  
+
     fetch(modifiedLogoURL.value, requestOptions)
       .then(response => response.text())
       .then(result => {
@@ -148,7 +148,7 @@
       })
       .catch(error => console.error(error));
   };
-  
+
   const signUp = () => {
     loading.value = true;
     formSubmitted.value = true;
@@ -187,10 +187,9 @@
       loading.value = false;
     });
   };
-  
+
   fetchLogo();
   </script>
-  
+
   <style scoped>
   </style>
-  
