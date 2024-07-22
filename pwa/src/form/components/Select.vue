@@ -15,7 +15,13 @@
 
 <script setup>
 import { Autocomplete } from 'frappe-ui'
-import { defineProps } from 'vue'
+import { defineProps, watch } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])
+
+
+watch(() => field.value, (newValue) => {
+  frm.setValue(field.fieldname, newValue.value);
+});
+
 </script>

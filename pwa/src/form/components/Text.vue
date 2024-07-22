@@ -6,8 +6,7 @@
       variant="subtle"
       :placeholder="field.label"
       :disabled="field.read_only"
-      :modelValue="value"
-	  v-model="value"
+      v-model="value"
     />
   </div>
 </template>
@@ -16,14 +15,11 @@
 import { TextInput } from 'frappe-ui'
 import { defineProps, watch, ref, onMounted } from 'vue'
 
-let value = ref("")
 const { field, frm } = defineProps(['field', 'frm'])
-onMounted(()=>{
-	value.value = field.value
-})
-watch(value, async (newValue, oldValue) => {
-	console.log("Watcher Called")
-	console.log(`${newValue, oldValue}`)
-	frm.trigger(field.fieldname, newValue)
+
+const value = ref("")
+
+watch(value, (newValue) => {
+  frm.setValue(field.fieldname, newValue)
 })
 </script>

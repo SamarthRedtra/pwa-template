@@ -4,7 +4,7 @@ import { userResource } from '@/data/user';
 
 const routes = [
   {
-    path: '/',
+    path: '/home',
     name: 'Home',
     component: () => import('@/pages/Home.vue'),
   },
@@ -24,7 +24,7 @@ const routes = [
     component: () => import('@/pages/SignUp.vue'),
   },
   {
-    path: '/form',
+    path: '/',
     name: 'Form',
     component: () => import('@/pages/Form.vue'),
   },
