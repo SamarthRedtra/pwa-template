@@ -1,5 +1,6 @@
 import frappe
 
+@frappe.whitelist()
 def get_form_meta(form, doctype):
 	meta_data={}
 	if doc := frappe.get_doc("PWA Form", {"form_name": form, "doctype_name": doctype}):
