@@ -4,24 +4,29 @@ import { userResource } from '@/data/user';
 
 const routes = [
   {
-    path: '/',
+    path: '/home',
     name: 'Home',
     component: () => import('@/pages/Home.vue'),
   },
   {
     name: 'Login',
-    path: '/account/login',
+    path: '/login',
     component: () => import('@/pages/Login.vue'),
   },
   {
-    path: '/account/forget-password',
+    path: '/forget-password',
     name: 'ForgetPassword',
     component: () => import('@/pages/ForgetPassword.vue'),
   },
   {
-    path: '/account/signup',
+    path: '/signup',
     name: 'SignUp',
     component: () => import('@/pages/SignUp.vue'),
+  },
+  {
+    path: '/',
+    name: 'Form',
+    component: () => import('@/pages/Form.vue'),
   },
 ];
 

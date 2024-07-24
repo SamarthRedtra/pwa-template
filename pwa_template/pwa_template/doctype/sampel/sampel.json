@@ -5,19 +5,31 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "users"
+  "head",
+  "amended_from"
  ],
  "fields": [
   {
-   "fieldname": "users",
-   "fieldtype": "Text Editor",
-   "label": "Users",
-   "options": "User"
+   "default": "Sample",
+   "fieldname": "head",
+   "fieldtype": "Heading",
+   "label": "Headers"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Sampel",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2024-07-19 12:40:17.390594",
+ "modified": "2024-07-22 18:12:51.028595",
  "modified_by": "Administrator",
  "module": "PWA Template",
  "name": "Sampel",
