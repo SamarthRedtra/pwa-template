@@ -14,12 +14,14 @@ class AfterMigrate:
 		for app_name in apps:
 			folder_path = frappe.get_app_path(app_name, app_name,"pwa_form")
 			if os.path.exists(folder_path):
-				for fname in os.listdir(folder_path):
+				for i, fname in enumerate(os.listdir(folder_path)):
+					update_progress_bar(f"Updating PWA Forms for {app_name}", i, len(os.listdir(folder_path)))
 					frappe.local.flags.in_patch = True
 					import_forms(os.path.join(folder_path, fname))
 					frappe.local.flags.in_patch = False
 					frappe.clear_cache()
-				
+				# print each progress bar on new line
+				print()
 							
 def import_forms(file_path):
 	try:
@@ -32,10 +34,9 @@ def import_forms(file_path):
 	if docs:
 		if not isinstance(docs, list):
 			docs = [docs]
-		for i, doc in enumerate(docs):
+		for doc in docs:
 			stored_hash = None
 			if doc["form_name"] and doc["doctype_name"]:
-				update_progress_bar(f"Updating PWA Forms for {doc['doctype_name']}", i, len(docs))
 				try:
 					stored_hash = frappe.db.get_value("PWA Form",{"form_name":doc["form_name"],"doctype_name":doc["doctype_name"]}, "document_hash_value")
 				except Exception:
@@ -55,8 +56,6 @@ def import_forms(file_path):
 			frappe.qb.update(doctype_table).set(doctype_table.document_hash_value, calculated_hash).where(
 				(doctype_table.form_name == doc["form_name"]) & (doctype_table.doctype_name == doc["doctype_name"])
 			).run()
-		click.echo()
-   
 def create_form_records(docdict):
 	docdict["__islocal"] = 1
 	docdict["doctype"] = "PWA Form"
