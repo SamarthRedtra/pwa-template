@@ -2,7 +2,7 @@
     <div class="p-2">
       <TextInput
         v-model="value"
-        :type="'datetime-local'"
+        :type="'date'"
         size="sm"
         variant="subtle"
         :label="field.label"

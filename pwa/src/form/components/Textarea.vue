@@ -1,24 +1,23 @@
 <template>
     <div class="p-2">
-      <TextInput
-        v-model="value"
-        :type="'datetime-local'"
+      <FormControl
+        :type="'textarea'"
         size="sm"
         variant="subtle"
-        :label="field.label"
         :placeholder="field.label"
         :disabled="field.read_only"
+        v-model="value"
       />
     </div>
   </template>
   
   <script setup>
-  import { TextInput } from 'frappe-ui'
-  import { defineProps, ref, watch } from 'vue'
+  import { FormControl } from 'frappe-ui'
+  import { defineProps, watch, ref, onMounted } from 'vue'
   
   const { field, frm } = defineProps(['field', 'frm'])
   
-  const value = ref(field.value || '')
+  const value = ref("")
   
   watch(value, (newValue) => {
     frm.setValue(field.fieldname, newValue)

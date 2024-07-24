@@ -13,15 +13,13 @@
   </template>
   
   <script setup>
-  import { Autocomplete } from 'frappe-ui'
-  import { defineProps, watch, ref, onMounted } from 'vue'
-  
-  const { field, frm } = defineProps(['field', 'frm'])
-  
-  const value = ref("")
-  
-  watch(value, (newValue) => {
-    frm.setValue(field.fieldname, newValue)
-  })
+    import { Autocomplete } from 'frappe-ui'
+    import { defineProps, watch, ref, onMounted } from 'vue'
+    
+    const { field, frm } = defineProps(['field', 'frm'])
+    
+    watch(() => field.value, (newValue) => {
+        frm.setValue(field.fieldname, newValue.value);
+    });
   </script>
   

@@ -6,7 +6,7 @@
         theme="gray"
         :variant="'ghost'"
         :label="value"
-      >{{value}}</Badge>
+      >{{field.label}}</Badge>
     </div>
   </template>
   
@@ -15,11 +15,6 @@
   import { defineProps, watch, ref, onMounted } from 'vue'
   
   const { field, frm } = defineProps(['field', 'frm'])
-  
-  const value = ref(field.label)
-  console.log(value.value)
-  watch(value, (newValue) => {
-    frm.setValue(field.val, newValue)
-  })
+  frm.setValue(field.fieldname, field.label)
   </script>
   
