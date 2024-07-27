@@ -18,6 +18,7 @@ import { defineProps, watch, ref, onMounted } from 'vue'
 const { field, frm } = defineProps(['field', 'frm'])
 
 const value = ref("")
+console.log(frm)
 
 watch(value, (newValue) => {
   frm.setValue(field.fieldname, newValue)
