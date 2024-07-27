@@ -99,7 +99,7 @@ export default class Form extends EventEmitter {
       fetch(modifiedSaveURL.value, requestOptions)
         .then((response) => response.text())
         .then((result) => {
-          return {"result" : result}
+          return result
         })
         .catch((error) => {
           return {"Error" : error}
@@ -115,6 +115,37 @@ export default class Form extends EventEmitter {
     }
   }
 
+  delete(name){
+    const myHeaders = new Headers();
+    myHeaders.append("Authorization", "token d0149bda3bda82c:aadbcbf2a847ea2");
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Cookie", "full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=");
+
+    const raw = JSON.stringify({
+      "doctype": "Customer",
+      "name": name,
+    });
+
+    const currentURL = ref(window.location.href);
+      const baseURL = computed(() => {
+        const url = new URL(currentURL.value);
+        return `${url.protocol}//${url.hostname}`;
+      });
+  
+    const modifiedDeleteURL = computed(() => `${baseURL.value}:8001/api/method/frappe.client.delete`);
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow"
+    };
+
+    fetch(modifiedDeleteURL.value, requestOptions)
+      .then((response) => response.text())
+      .then((result) => console.log(result))
+      .catch((error) => console.error(error));
+  }
   cancel() {}
 
   isDirty() {

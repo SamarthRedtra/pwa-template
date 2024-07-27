@@ -36,7 +36,7 @@
             :disabled="false"
             :link="null"
             class="w-[21rem] h-[35px] p-2"
-            @click="save"
+            @click="handleSave"
           >
             Save
           </Button>
@@ -101,17 +101,19 @@ const fieldMap = {
 }
 
 const val = ref(0)
-const result = ref('')
+const saveResult = ref('')
 
-const docname = ref('')
-
-const save = () => {
-  result.value = props.frm.save()
+const handleSave = async () => {
+  try {
+    const result = await props.frm.save();
+    saveResult.value = result;
+  } catch (error) {
+    saveResult.value = `Error: ${error}`;
+  } finally {
+    setTimeout(() => { saveResult.value = ''; }, 1000);
+  }
 }
 
-docname.value = "Create New " + props.frm.doctype
-
-console.log(docname.value)
 const filteredFields = computed(() => {
   const result = []
   val.value = 0 
@@ -126,14 +128,17 @@ const filteredFields = computed(() => {
   return result
 })
 
+const handleDeleteClick = () => {
+
+  if (props.frm.name){
+    props.frm.delete(props.frm.name)
+  }  
+}
+
 const dropdownOptions = [
   {
     group: 'Actions',
     items: [
-      {
-        label: 'Duplicate',
-        icon: () => h(FeatherIcon, { name: "copy" }),
-      },
       {
         label: 'Print',
         icon: () => h(FeatherIcon, { name: "printer" }),
@@ -145,6 +150,7 @@ const dropdownOptions = [
       {
         label: 'Delete',
         icon: () => h(FeatherIcon, { name: "trash" }),
+        onClick: handleDeleteClick 
       },
     ],
   },
