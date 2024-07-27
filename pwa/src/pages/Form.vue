@@ -7,7 +7,7 @@
           <p class="font-semibold w-full">{{ form.doctype }}</p>
           <div class="w-full flex justify-end">
             <div class="p-1 pr-4">
-              <FeatherIcon class="w-5 h-5 text-gray-600 hover:text-black" name="bell" />
+              <FeatherIcon class="w-5 h-5 text-gray-600 hover:text-black" @click = "goToNotifications" name="bell" />
             </div>
             <Avatar
               :shape="'square'"
@@ -35,6 +35,10 @@ import { useRouter } from 'vue-router'
 const formStore = useFormStore();
 const form = formStore.form;
 const router = useRouter();
+
+const goToNotifications = () => {
+  router.push('/notifications')
+}
 
 const goBack = () => {
   router.back();
