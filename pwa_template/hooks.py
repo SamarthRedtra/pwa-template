@@ -70,6 +70,10 @@ app_license = "mit"
 # before_install = "pwa_template.install.before_install"
 # after_install = "pwa_template.install.after_install"
 
+# After Migrate
+# ------------
+after_migrate = "pwa_template.after_migrate.AfterMigrate"
+
 # Uninstallation
 # ------------
 

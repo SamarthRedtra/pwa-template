@@ -46,7 +46,7 @@
                 Enter password
               </div>
               <div class="w-full">
-                <router-link to="/account/forget-password" class="pb-1 text-xs text-gray-600 justify-end flex pr-2 hover:underline">
+                <router-link to="/forget-password" class="pb-1 text-xs text-gray-600 justify-end flex pr-2 hover:underline">
                   Forgot Password?
                 </router-link>
               </div>
@@ -127,7 +127,7 @@ const submit = (e: Event) => {
 };
 
 const goToSignUp = () => {
-  router.push('/account/signup');
+  router.push('/signup');
 };
 
 const imageSrc = ref('');
