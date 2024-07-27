@@ -1,5 +1,5 @@
-import { reactive } from 'vue'
-import EventEmitter from "./eventemiitor"
+import { reactive, ref, computed } from 'vue';
+import EventEmitter from './eventemiitor';
 
 export default class Form extends EventEmitter {
   constructor(doctype, name = null) {
@@ -8,38 +8,51 @@ export default class Form extends EventEmitter {
     this.name = name;
     this.fields = reactive([]);
     this.dirty = false;
-    this.doc = reactive({});
-    this.on("name", (value) => {
-      console.log("Name changed to: ", value);
+    this.doc = reactive({
+      docstatus: 0,
+      doctype: this.doctype,
+    });
+    this.submitable = ref(0);
+
+    this.on('name', (value) => {
+      console.log('Name changed to: ', value);
       this.dirty = true;
     });
   }
 
   async initFields() {
     const myHeaders = new Headers();
-    myHeaders.append("Authorization", "token d0149bda3bda82c:aadbcbf2a847ea2");
-    myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Cookie", "full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=");
+    myHeaders.append('Authorization', 'token d0149bda3bda82c:aadbcbf2a847ea2');
+    myHeaders.append('Content-Type', 'application/json');
+    myHeaders.append('Cookie', 'full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=');
 
     const raw = JSON.stringify({
-      "form": "Test Form",
-      "doctype": this.doctype
+      form: 'Test Form',
+      doctype: this.doctype,
     });
 
     const requestOptions = {
-      method: "POST",
+      method: 'POST',
       headers: myHeaders,
       body: raw,
-      redirect: "follow"
+      redirect: 'follow',
     };
 
+    const currentURL = ref(window.location.href);
+    const baseURL = computed(() => {
+      const url = new URL(currentURL.value);
+      return `${url.protocol}//${url.hostname}`;
+    });
+
+    const modifiedDocFetchURL = computed(() => `${baseURL.value}:8001/api/method/pwa_template.utils.get_form_meta`);
+
     try {
-      const response = await fetch("http://192.168.1.20:8001/api/method/pwa_template.utils.get_form_meta", requestOptions);
+      const response = await fetch(modifiedDocFetchURL.value, requestOptions);
       const result = await response.json();
+      this.submitable = result.message.is_submittable;
       this.fields = result.message.fields;
-      console.log("Fields initialized: ", this.fields);
     } catch (error) {
-      console.error("Error fetching form metadata: ", error);
+      console.error('Error fetching form metadata: ', error);
     }
   }
 
@@ -50,9 +63,9 @@ export default class Form extends EventEmitter {
   setValue(fieldname, value) {
     this.dirty = true;
     this.doc[fieldname] = value;
-    console.log(this.doc)
+    console.log(this.doc);
   }
-  
+
   isNew() {
     return !!this.name;
   }
@@ -60,14 +73,45 @@ export default class Form extends EventEmitter {
   save() {
     if (this.validateMandatory()) {
       this.dirty = false;
-      console.log("Form saved successfully!");
+  
+      const myHeaders = new Headers();
+      myHeaders.append('Authorization', 'token d0149bda3bda82c:aadbcbf2a847ea2');
+      myHeaders.append('Content-Type', 'application/json');
+      const raw = JSON.stringify({
+        doc: JSON.stringify(this.doc),
+        action: "Save"
+      });
+  
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow',
+      };
+  
+      const currentURL = ref(window.location.href);
+      const baseURL = computed(() => {
+        const url = new URL(currentURL.value);
+        return `${url.protocol}//${url.hostname}`;
+      });
+  
+      const modifiedSaveURL = computed(() => `${baseURL.value}:8001/api/method/frappe.desk.form.save.savedocs`);
+      fetch(modifiedSaveURL.value, requestOptions)
+        .then((response) => response.text())
+        .then((result) => {
+          return {"result" : result}
+        })
+        .catch((error) => {
+          return {"Error" : error}
+        });
     }
   }
+  
 
   submit() {
     if (this.validateMandatory()) {
       this.dirty = false;
-      console.log("Form submitted successfully!");
+      console.log('Form submitted successfully!');
     }
   }
 
