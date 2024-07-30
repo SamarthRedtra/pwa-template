@@ -1,5 +1,6 @@
 import { reactive, ref, computed } from 'vue';
 import EventEmitter from './eventemiitor';
+import { createListResource, createResource, createDocumentResource } from 'frappe-ui';
 
 export default class Form extends EventEmitter {
   constructor(doctype, name = null) {
@@ -9,8 +10,7 @@ export default class Form extends EventEmitter {
     this.fields = reactive([]);
     this.dirty = false;
     this.doc = reactive({
-      docstatus: 0,
-      doctype: this.doctype,
+      docstatus: 0, 
     });
     this.submitable = ref(0);
 
@@ -49,6 +49,7 @@ export default class Form extends EventEmitter {
     try {
       const response = await fetch(modifiedDocFetchURL.value, requestOptions);
       const result = await response.json();
+      console.log(result)
       this.submitable = result.message.is_submittable;
       this.fields = result.message.fields;
     } catch (error) {
@@ -73,78 +74,61 @@ export default class Form extends EventEmitter {
   save() {
     if (this.validateMandatory()) {
       this.dirty = false;
-  
-      const myHeaders = new Headers();
-      myHeaders.append('Authorization', 'token d0149bda3bda82c:aadbcbf2a847ea2');
-      myHeaders.append('Content-Type', 'application/json');
-      const raw = JSON.stringify({
-        doc: JSON.stringify(this.doc),
-        action: "Save"
+      const savedoc = createListResource({
+        doctype: this.doctype,
       });
   
-      const requestOptions = {
-        method: 'POST',
-        headers: myHeaders,
-        body: raw,
-        redirect: 'follow',
-      };
-  
-      const currentURL = ref(window.location.href);
-      const baseURL = computed(() => {
-        const url = new URL(currentURL.value);
-        return `${url.protocol}//${url.hostname}`;
-      });
-  
-      const modifiedSaveURL = computed(() => `${baseURL.value}:8001/api/method/frappe.desk.form.save.savedocs`);
-      fetch(modifiedSaveURL.value, requestOptions)
-        .then((response) => response.text())
-        .then((result) => {
-          return result
+      return savedoc.insert.submit(this.doc)
+        .then(response => {
+          return 'Document saved successfully';
         })
-        .catch((error) => {
-          return {"Error" : error}
+        .catch(error => {
+          console.log(error);
+          throw new Error('Error saving document');
         });
+    } else {
+      return Promise.reject(new Error('Validation failed'));
     }
   }
   
-
-  submit() {
+  submit(name) {
     if (this.validateMandatory()) {
       this.dirty = false;
-      console.log('Form submitted successfully!');
+      const submitdoc = createListResource(
+        {
+          doctype: this.doctype,
+          filters: {
+            name: name,
+          }
+        }
+      )
+
+      submitdoc.setValue.submit({
+        docstatus: 1
+      })
+      console.log(submitdoc)
+      // console.log('Form submitted successfully!');
     }
   }
 
   delete(name){
-    const myHeaders = new Headers();
-    myHeaders.append("Authorization", "token d0149bda3bda82c:aadbcbf2a847ea2");
-    myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Cookie", "full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=");
-
-    const raw = JSON.stringify({
-      "doctype": "Customer",
-      "name": name,
+    const val = ref('')
+    const deletedoc = createDocumentResource(
+      {
+        doctype: this.doctype,
+        name: name,   
+      }
+    )
+    return deletedoc.delete.submit()
+    .then(response => {
+      val.value = 'Document Deleted successfully';
+      return val.value; 
+    })
+    .catch(error => {
+      console.error(error);
+      val.value = 'Error deleting document';
+      return val.value;
     });
-
-    const currentURL = ref(window.location.href);
-      const baseURL = computed(() => {
-        const url = new URL(currentURL.value);
-        return `${url.protocol}//${url.hostname}`;
-      });
-  
-    const modifiedDeleteURL = computed(() => `${baseURL.value}:8001/api/method/frappe.client.delete`);
-
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow"
-    };
-
-    fetch(modifiedDeleteURL.value, requestOptions)
-      .then((response) => response.text())
-      .then((result) => console.log(result))
-      .catch((error) => console.error(error));
   }
   cancel() {}
 
