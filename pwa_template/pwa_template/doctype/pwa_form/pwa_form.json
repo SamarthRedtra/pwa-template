@@ -1,10 +1,11 @@
 {
  "actions": [],
- "autoname": "format:{form_name}-{doctype_name}",
+ "autoname": "field:docname",
  "creation": "2024-07-22 11:43:04.075230",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "docname",
   "form_name",
   "parent_form",
   "column_break_udhj",
@@ -73,15 +74,22 @@
    "fieldname": "is_child_table",
    "fieldtype": "Check",
    "label": "Is Child Table"
+  },
+  {
+   "fieldname": "docname",
+   "fieldtype": "Data",
+   "label": "Docname",
+   "reqd": 1,
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-22 15:16:10.819665",
+ "modified": "2024-07-31 18:21:28.767797",
  "modified_by": "Administrator",
  "module": "PWA Template",
  "name": "PWA Form",
- "naming_rule": "Expression",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

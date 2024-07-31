@@ -31,31 +31,36 @@ def import_forms(file_path):
 		return
 
 	calculated_hash = import_file.calculate_hash(file_path)
+	prev_forms = frappe.get_all("PWA Form",pluck="name")
 	if docs:
 		if not isinstance(docs, list):
 			docs = [docs]
 		for doc in docs:
 			stored_hash = None
-			if doc["form_name"] and doc["doctype_name"]:
-				try:
-					stored_hash = frappe.db.get_value("PWA Form",{"form_name":doc["form_name"],"doctype_name":doc["doctype_name"]}, "document_hash_value")
-				except Exception:
-					pass
+			if doc['docname'] in prev_forms:
+				prev_forms.pop(prev_forms.index(doc['docname']))
+
+			try:
+				stored_hash = frappe.db.get_value("PWA Form",doc['docname'], "document_hash_value")
+			except Exception:
+				pass
 			if stored_hash and stored_hash == calculated_hash:
 				continue
 
 			#delete existing form if it exists
-			if frappe.db.exists("PWA Form", {"form_name":doc["form_name"],"doctype_name":doc["doctype_name"]}):
-				frappe.delete_doc("PWA Form", {"form_name":doc["form_name"],"doctype_name":doc["doctype_name"]}, force=1, for_reload=True)
+			if frappe.db.exists("PWA Form", doc['docname']):
+				frappe.delete_doc("PWA Form", doc['docname'], force=1, for_reload=True)
 
 			#create new form
 			create_form_records(doc)
 
 			#update hash value
 			doctype_table = DocType("PWA Form")
-			frappe.qb.update(doctype_table).set(doctype_table.document_hash_value, calculated_hash).where(
-				(doctype_table.form_name == doc["form_name"]) & (doctype_table.doctype_name == doc["doctype_name"])
-			).run()
+			frappe.qb.update(doctype_table).set(doctype_table.document_hash_value, calculated_hash).where(doctype_table.docname == doc["docname"]).run()
+
+	#delete remaining forms that are not in the file
+	for prev_form in prev_forms:
+			frappe.delete_doc("PWA Form", prev_form, force=1, for_reload=True)
 def create_form_records(docdict):
 	docdict["__islocal"] = 1
 	docdict["doctype"] = "PWA Form"

@@ -1,9 +1,9 @@
 import frappe
 
 @frappe.whitelist()
-def get_form_meta(form, doctype):
+def get_form_meta(docname):
 	meta_data={}
-	if doc := frappe.get_doc("PWA Form", {"form_name": form, "doctype_name": doctype}):
+	if doc := frappe.get_doc("PWA Form", docname):
 		fields = []
 		for field in doc.pwa_form_fields:
 			row = {
@@ -19,7 +19,6 @@ def get_form_meta(form, doctype):
 			}
 			if field.fieldtype == "Select":
 				row['options'] = [{'label': option, 'value': option} for option in field.options.split('\n')]
-
 			fields.append(row)
 
 		meta_data = {

@@ -150,10 +150,11 @@
     }
 
     ],
+    "docname" : "test_form",
     "form_name" : "Test Form",
     "doctype_name" : "Customer",
     "name" : "cus_customer.json",
     "is_submittable" : 0,
     "is_child_table" : 0,
-    "parent_form" : 0
+    "parent_form" : null
    }
