@@ -9,7 +9,7 @@
             <div class="p-1 pr-4">
               <FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
             </div>
-            <Avatar :shape="'square'" :image="null" label="Ravi" size="xl"/>
+            <User/>
           </div>
         </div>
       </div>
@@ -24,27 +24,66 @@
         ></component>
       </div>
 
-      <div class="flex w-full sm:w-96 pl-5 pb-2 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
-        <div class="pt-1">
+      <div class="flex w-full sm:w-96 pl-5 pb-1 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
+        <div class="pt-1 w-full">
           <Button
+            v-if="!showSubmitButton && docStatus !== 1"
             :variant="'solid'"
             theme="gray"
             size="sm"
-            label="Button"
-            :loading="false"
-            :loadingText="null"
+            label="Save"
+            :loading="loading"
+            :loadingText="'Saving...'"
             :disabled="false"
             :link="null"
-            class="w-[21rem] h-[35px] p-2"
+            class="w-[21rem] h-[2.30rem] p-2"
             @click="handleSave"
-          >
-            Save
-          </Button>
+          />
+          <Button
+            v-else-if="docStatus === 1 && !showSubmitButton"
+            :variant="'outline'"
+            theme="gray"
+            size="sm"
+            label="Cancel"
+            :loading="loading"
+            :loadingText="'Cancelling...'"
+            :disabled="false"
+            :link="null"
+            class="w-[21rem] h-[2.30rem] p-2"
+            @click="handleCancel"
+          />
+          <Button
+            v-else
+            :variant="'solid'"
+            theme="gray"
+            size="sm"
+            label="Submit"
+            :loading="loading"
+            :loadingText="'Submitting...'"
+            :disabled="false"
+            :link="null"
+            class="w-[21rem] h-[2.30rem] p-2"
+            @click="handleSubmit"
+          />
+          <div v-if="saveResult" 
+               :class="['fixed bottom-[4rem] leading-5 pr-[65rem] pl-[2.5rem] z-50 w-full sm:w-96', saveSuccess ? 'animate-slide-in' : 'animate-slide-out']">
+            <div class="rounded w-[20rem] h-fit p-2 text-left"
+                 :class="{'bg-blue-200 text-blue-500': saveSuccess, 'bg-red-200 text-red-500': !saveSuccess}">
+              <FeatherIcon v-if="saveSuccess" name="check" class="inline w-4 h-4 mr-2" />
+              <FeatherIcon v-else name="x" class="inline w-4 h-4 mr-2" />
+              {{ saveResult }}
+            </div>
+          </div>
+          <div v-if="deletedMessage" 
+               class="fixed bottom-[4rem] leading-5 pr-[65rem] pl-[2.5rem] z-50 w-full sm:w-96 animate-slide-in">
+            <div class="rounded w-[20rem] h-fit p-2 text-left bg-blue-200 text-blue-500">
+              <FeatherIcon name="info" class="inline w-4 h-4 mr-2" />
+              {{ deletedMessage }}
+            </div>
+          </div>
         </div>
         <div class="p-2 pl-0 pt-2.5">
-          <Dropdown
-            :options="dropdownOptions"
-          >
+          <Dropdown :options="dropdownOptions">
             <Button>
               <template #icon>
                 <FeatherIcon
@@ -59,27 +98,29 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { defineProps, computed, ref, h } from 'vue'
-import Text from './components/Text.vue'
-import Select from './components/Select.vue'
-import Badge from './components/Badge.vue'
-import Int from './components/Int.vue'
-import DateTime from './components/DateTime.vue'
-import Autocomplete from './components/Autocomplete.vue'
-import SectionBreak from './components/SectionBreak.vue'
-import Date from './components/Date.vue'
-import Checkbox from './components/Checkbox.vue'
-import Textarea from './components/Textarea.vue'
-import Float from './components/Float.vue'
-import Link from './components/Link.vue'
-import Currency from './components/Currency.vue'
-import { useRouter } from 'vue-router'
-import { FeatherIcon, Avatar, Dropdown, Button } from 'frappe-ui'
+import { defineProps, computed, ref, h, watch } from 'vue';
+import Text from './components/Text.vue';
+import Select from './components/Select.vue';
+import Badge from './components/Badge.vue';
+import Int from './components/Int.vue';
+import DateTime from './components/DateTime.vue';
+import Autocomplete from './components/Autocomplete.vue';
+import SectionBreak from './components/SectionBreak.vue';
+import Date from './components/Date.vue';
+import Checkbox from './components/Checkbox.vue';
+import Textarea from './components/Textarea.vue';
+import Float from './components/Float.vue';
+import Link from './components/Link.vue';
+import User from './components/User.vue';
+import Currency from './components/Currency.vue';
+import { useRouter } from 'vue-router';
+import { FeatherIcon, Avatar, Dropdown, Button } from 'frappe-ui';
 
 const props = defineProps({
   frm: Object
-})
+});
 
 const fieldMap = {
   Data: Text,
@@ -97,71 +138,123 @@ const fieldMap = {
   'Small Text': Textarea,
   Float: Float,
   Link: Link,
-  Currency: Currency,
-}
+  Currency: Currency
+};
 
-const val = ref(0)
-const saveResult = ref('')
+const loading = ref(false);
+const saveResult = ref('');
+const saveSuccess = ref(false);
+const submitable = ref(0);
+const showSubmitButton = ref(false);
+const docName = ref('');
+const docStatus = ref(0);
+
+watch(docStatus, (newStatus) => {
+  if (newStatus === 1) {
+    showSubmitButton.value = false;
+  }
+});
 
 const handleSave = async () => {
+  loading.value = true;
+  submitable.value = props.frm.submitable;
   try {
-    const result = await props.frm.save();
-    saveResult.value = result;
+    const name = await props.frm.save(); 
+    docName.value = name;
+    saveResult.value = 'Save successful!';
+    saveSuccess.value = true;
+    if (submitable.value === 1) {
+      showSubmitButton.value = true;
+    }
   } catch (error) {
-    saveResult.value = `Error: ${error}`;
+    saveResult.value = `Error: ${error.message}`;
+    saveSuccess.value = false;
+    console.error(`Error: ${error.message}`);
   } finally {
-    setTimeout(() => { saveResult.value = ''; }, 1000);
+    loading.value = false;
+    setTimeout(() => { saveResult.value = ''; }, 2500);
   }
-}
+};
+
+const handleSubmit = async () => {
+  loading.value = true;
+  try {
+    docStatus.value = await props.frm.submit(docName.value);
+    saveResult.value = 'Submit successful!';
+    saveSuccess.value = true;
+  } catch (error) {
+    saveResult.value = `Error: ${error.message}`;
+    saveSuccess.value = false;
+    console.error(`Error: ${error.message}`);
+  } finally {
+    loading.value = false;
+    setTimeout(() => { saveResult.value = ''; }, 2500);
+  }
+};
+
+const handleCancel = async () => {
+  console.log(docStatus.value)
+};
 
 const filteredFields = computed(() => {
-  const result = []
-  val.value = 0 
+  const result = [];
+  let sectionCount = 0;
   for (const field of props.frm.fields) {
     if (field.fieldtype === 'Section Break') {
-      val.value = val.value + 1
-      result.push(field)
-    } else if (val.value === 0) {
-      result.push(field)
+      sectionCount += 1;
+      result.push({ ...field, value: props.frm.doc[field.fieldname] || '' });
+    } else if (sectionCount === 0) {
+      result.push({ ...field, value: props.frm.doc[field.fieldname] || '' });
+    } else {
+      result.push({ ...field, value: props.frm.doc[field.fieldname] || '' });
     }
   }
-  return result
-})
+  return result;
+});
 
-const handleDeleteClick = () => {
 
-  if (props.frm.name){
-    props.frm.delete(props.frm.name)
-  }  
-}
+const deletedMessage = ref('');
+const handleDeleteClick = async () => {
+    if (docName.value) {
+      deletedMessage.value = await props.frm.delete(docName.value);
+      console.log(deletedMessage.value);
+      setTimeout(() => { deletedMessage.value = ''; }, 2500);
+    }
+};
 
-const dropdownOptions = [
-  {
+const dropdownOptions = computed(() => {
+  const options = [
+    {
+      label: 'Print',
+      icon: () => h(FeatherIcon, { name: "printer" }),
+    },
+    {
+      label: "Create New " + props.frm.doctype,
+      icon: () => h(FeatherIcon, { name: "file-plus" }),
+    },
+  ];
+
+  if (!showSubmitButton.value && docStatus !== 1) {
+    options.push({
+      label: 'Delete',
+      icon: () => h(FeatherIcon, { name: "trash" }),
+      onClick: handleDeleteClick
+    });
+  }
+
+  return [{
     group: 'Actions',
-    items: [
-      {
-        label: 'Print',
-        icon: () => h(FeatherIcon, { name: "printer" }),
-      },
-      {
-        label: "Create New " + props.frm.doctype,
-        icon: () => h(FeatherIcon, { name: "file-plus" }),
-      },
-      {
-        label: 'Delete',
-        icon: () => h(FeatherIcon, { name: "trash" }),
-        onClick: handleDeleteClick 
-      },
-    ],
-  },
-]
+    items: options,
+  }];
+});
 
-const router = useRouter()
+const router = useRouter();
 
 const goBack = () => {
-  router.back()
-}
+  router.back();
+};
 </script>
+
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {
   display: none;

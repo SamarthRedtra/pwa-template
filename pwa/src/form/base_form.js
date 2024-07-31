@@ -9,6 +9,9 @@ export default class Form extends EventEmitter {
     this.name = name;
     this.fields = reactive([]);
     this.dirty = false;
+    this.Docstatus = ref(0);
+    this.form = reactive();
+    
     this.doc = reactive({
       docstatus: 0, 
     });
@@ -49,7 +52,6 @@ export default class Form extends EventEmitter {
     try {
       const response = await fetch(modifiedDocFetchURL.value, requestOptions);
       const result = await response.json();
-      console.log(result)
       this.submitable = result.message.is_submittable;
       this.fields = result.message.fields;
     } catch (error) {
@@ -80,7 +82,14 @@ export default class Form extends EventEmitter {
   
       return savedoc.insert.submit(this.doc)
         .then(response => {
-          return 'Document saved successfully';
+          Object.assign(this.doc, response);
+          for (let key in response) {
+            if (response.hasOwnProperty(key) && !this.doc.hasOwnProperty(key)) {
+              this.doc[key] = response[key];
+            }
+          }
+          this.form = response;
+          return response.name;
         })
         .catch(error => {
           console.log(error);
@@ -91,25 +100,36 @@ export default class Form extends EventEmitter {
     }
   }
   
+  
+  
   submit(name) {
     if (this.validateMandatory()) {
       this.dirty = false;
-      const submitdoc = createListResource(
-        {
-          doctype: this.doctype,
-          filters: {
-            name: name,
-          }
+      const submitdoc = createListResource({
+        doctype: this.doctype,
+        filters: {
+          name: name,
         }
-      )
-
-      submitdoc.setValue.submit({
-        docstatus: 1
-      })
-      console.log(submitdoc)
-      // console.log('Form submitted successfully!');
+      });
+  
+      return submitdoc.reload()
+        .then(() => submitdoc.setValue.submit({
+          name: name,
+          docstatus: 1
+        }))
+        .then(response => {
+          this.Docstatus = response.docstatus;
+          return response.docstatus;
+        })
+        .catch(error => {
+          console.log(error);
+          throw new Error('Error submitting document');
+        });
+    } else {
+      return Promise.reject(new Error('Validation failed'));
     }
   }
+  
 
   delete(name){
     const val = ref('')

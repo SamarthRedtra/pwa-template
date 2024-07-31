@@ -2,7 +2,7 @@
   <div class="p-2">
     <Autocomplete
       :options="fetchedOptions"
-      v-model="field.value"
+      v-model="autocompleteValue"
       size="sm"
       variant="subtle"
       :label="field.label"
@@ -20,6 +20,7 @@ import { defineProps, ref, watch, onMounted } from 'vue'
 const { field, frm } = defineProps(['field', 'frm'])
 
 const fetchedOptions = ref([])
+const autocompleteValue = ref(field.value || '')
 
 const fetchOptions = async (query = '') => {
   const resource = createListResource({
@@ -29,25 +30,24 @@ const fetchOptions = async (query = '') => {
     orderBy: 'creation desc',
   })
 
-  resource.reload().then(() => {
-    let dataArray = resource.data;
-    if (dataArray.length > 0) {
-      fetchedOptions.value = dataArray.map(option => option.name)
-    } else {
-      fetchedOptions.value = []
-    }
-  });
+  try {
+    await resource.reload()
+    fetchedOptions.value = resource.data.map(option => option.name)
+  } catch (error) {
+    console.error('Error fetching options:', error)
+    fetchedOptions.value = []
+  }
 }
 
 const handleInput = (event) => {
-  fetchOptions(event) 
+  fetchOptions(event)
 }
 
 onMounted(() => {
   fetchOptions()
 })
 
-watch(() => field.value, (newValue) => {
-  frm.setValue(field.fieldname, newValue.value)
+watch(autocompleteValue, (newValue) => {
+  frm.setValue(field.fieldname, newValue)
 })
 </script>

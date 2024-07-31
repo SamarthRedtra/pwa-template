@@ -12,15 +12,21 @@
 </template>
 
 <script setup>
-import { TextInput } from 'frappe-ui'
-import { defineProps, watch, ref } from 'vue'
+import { TextInput } from 'frappe-ui';
+import { defineProps, watch, ref } from 'vue';
 
-const { field, frm } = defineProps(['field', 'frm'])
+const { field, frm } = defineProps(['field', 'frm']);
 
-const value = ref('')
+const value = ref('');
 
+// Watch for changes to the input value and update the form
 watch(value, (newValue) => {
   const intValue = parseInt(newValue, 10);
-  frm.setValue(field.fieldname, isNaN(intValue) ? '' : intValue);
-})
+  if (!isNaN(intValue)) {
+    frm.setValue(field.fieldname, intValue);
+  } else {
+    // Handle invalid input, setting the form field to an empty string
+    frm.setValue(field.fieldname, '');
+  }
+});
 </script>
