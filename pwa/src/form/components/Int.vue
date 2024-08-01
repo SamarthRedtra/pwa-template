@@ -5,28 +5,32 @@
       size="sm"
       variant="subtle"
       :placeholder="field.label"
-      :disabled="field.read_only"
+      :disabled="isDisabled"
       v-model="value"
     />
   </div>
 </template>
 
 <script setup>
-import { TextInput } from 'frappe-ui';
-import { defineProps, watch, ref } from 'vue';
+import { TextInput } from 'frappe-ui'
+import { defineProps, watch, ref, computed } from 'vue'
 
-const { field, frm } = defineProps(['field', 'frm']);
+const { field, frm } = defineProps(['field', 'frm'])
 
-const value = ref('');
+const value = ref('')
 
-// Watch for changes to the input value and update the form
+const isDisabled = computed(() => {
+  return field.read_only == 1 || frm.Docstatus == 1
+})
+
 watch(value, (newValue) => {
-  const intValue = parseInt(newValue, 10);
-  if (!isNaN(intValue)) {
-    frm.setValue(field.fieldname, intValue);
-  } else {
-    // Handle invalid input, setting the form field to an empty string
-    frm.setValue(field.fieldname, '');
+  const intValue = parseInt(newValue, 10)
+  frm.setValue(field.fieldname, isNaN(intValue) ? '' : intValue)
+})
+
+watch(frm, (newFrm) => {
+  if (field.value) {
+    value.value = field.value
   }
-});
+})
 </script>

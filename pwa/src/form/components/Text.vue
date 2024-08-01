@@ -17,15 +17,15 @@ import { defineProps, watch, ref, computed } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])
 
-const value = ref(field.value)
+const value = ref("")
 
 const isDisabled = computed(() => {
-  return frm.Docstatus === 1
+  return field.read_only == 1 || frm.Docstatus == 1
 })
 
 watch(frm, (newFrm) => {
-  if(newFrm.Docstatus == 1){
-    console.log(value.value)
+  if(field.value){
+    value.value = field.value
   }
 })
 

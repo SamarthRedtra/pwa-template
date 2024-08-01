@@ -2,7 +2,7 @@
   <div class="p-2">
     <Autocomplete
       :options="field.options"
-      v-model="autocompleteValue"
+      v-model="field.value"
       size="sm"
       variant="subtle"
       :label="field.label"
@@ -15,19 +15,13 @@
 
 <script setup>
 import { Autocomplete } from 'frappe-ui'
-import { defineProps, ref, watch } from 'vue'
+import { defineProps, watch } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])
 
-// Local ref for the autocomplete value
-const autocompleteValue = ref(field.value || '')
-
-// Watch for changes in autocompleteValue and update frm accordingly
-watch(autocompleteValue, (newValue) => {
-  frm.setValue(field.fieldname, newValue);
-});
 
 watch(() => field.value, (newValue) => {
-  autocompleteValue.value = newValue;
+  frm.setValue(field.fieldname, newValue.value);
 });
+
 </script>

@@ -28,6 +28,11 @@ const routes = [
     name: 'Form',
     component: () => import('@/pages/Form.vue'),
   },
+  {
+    path: '/showform',
+    name: 'Showform',
+    component: () => import('@/pages/ShowForm.vue'),
+  },
 ];
 
 const router = createRouter({

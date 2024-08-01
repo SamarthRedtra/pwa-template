@@ -29,35 +29,22 @@
       </div>
 
       <div class="flex w-full sm:w-96 pl-5 pb-1 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
-        <div class="pt-1 w-full">
+        <div class="pt-1 w-full h-full">
           <Button
-            v-if="!showSubmitButton && docStatus !== 1"
+            v-if="props.frm.Saved == 0"
             :variant="'solid'"
             theme="gray"
             size="sm"
             label="Save"
             :loading="loading"
             :loadingText="'Saving...'"
-            :disabled="false"
+            :disabled="props.frm.saved"
             :link="null"
-            class="w-[21rem] h-[2.30rem] p-2"
+            class="w-[21rem] h-full p-2"
             @click="handleSave"
           />
           <Button
-            v-else-if="docStatus === 1 && !showSubmitButton"
-            :variant="'outline'"
-            theme="gray"
-            size="sm"
-            label="Cancel"
-            :loading="loading"
-            :loadingText="'Cancelling...'"
-            :disabled="false"
-            :link="null"
-            class="w-[21rem] h-[2.30rem] p-2"
-            @click="handleCancel"
-          />
-          <Button
-            v-else
+            v-else-if="docStatus === 0 && Saved == 1 && submitable == 1 && Submitable == 0"
             :variant="'solid'"
             theme="gray"
             size="sm"
@@ -66,8 +53,21 @@
             :loadingText="'Submitting...'"
             :disabled="false"
             :link="null"
-            class="w-[21rem] h-[2.30rem] p-2"
+            class="w-[21rem] h-full p-2"
             @click="handleSubmit"
+          />
+          <Button
+          v-else
+          :variant="'solid'"
+          theme="red"
+          size="sm"
+          label="Cancel"
+          :loading="loading"
+          :loadingText="'Cancelling...'"
+          :disabled="false"
+          :link="null"
+          class="w-[21rem] h-full p-2"
+          @click="handleCancel"    
           />
           <div v-if="saveResult" 
                :class="['fixed bottom-[4rem] leading-5 pr-[65rem] pl-[2.5rem] z-50 w-full sm:w-96', saveSuccess ? 'animate-slide-in' : 'animate-slide-out']">
@@ -120,10 +120,11 @@ import Link from './components/Link.vue';
 import User from './components/User.vue';
 import Currency from './components/Currency.vue';
 import { useRouter } from 'vue-router';
-import { FeatherIcon, Avatar, Dropdown, Button } from 'frappe-ui';
+import { FeatherIcon, Avatar, Dropdown, Button, Dialog } from 'frappe-ui';
 
 const props = defineProps({
-  frm: Object
+  frm: Object,
+  docname: String,
 });
 
 const fieldMap = {
@@ -146,34 +147,35 @@ const fieldMap = {
 };
 
 const loading = ref(false);
-const saveResult = ref('');
+const saveResult = ref(''); 
 const saveSuccess = ref(false);
-const submitable = ref(0);
-const showSubmitButton = ref(false);
-const docName = ref('');
-const docStatus = ref(0);
+const submitable = ref(props.frm.submitable)
+const docName = props.docname;
+const docStatus = ref(props.frm.Docstatus);
 const formAfterSave = ref({})
+const Saved = ref(props.frm.Saved);
+const Submitable = ref(props.frm.Submit);
 
-watch(docStatus, (newStatus) => {
-  if (newStatus === 1) {
-    showSubmitButton.value = false;
-  }
+watch(() => props.frm, (newForm) => {
+  docStatus.value = newForm.Docstatus;
+  Saved.value = newForm.Saved;
+  Submitable.value = newForm.Submit;
+  submitable.value = newForm.submitable;
 });
 
+
+props.frm.name = props.docname
+ 
 const handleSave = async () => {
   loading.value = true;
-  submitable.value = props.frm.submitable;
+  submitable = props.frm.submitable;
   try {
     const name = await props.frm.save(); 
-    docName.value = name;
+    docName = name;
     saveResult.value = 'Save successful!';
     saveSuccess.value = true;
-    if (submitable.value === 1) {
-      showSubmitButton.value = true;
-    }
     formAfterSave.value = props.frm.doc;
     console.log(formAfterSave.value);
-    router.push({ path: '/showform', query: { docname: name } });
   } catch (error) {
     saveResult.value = `Error: ${error.message}`;
     saveSuccess.value = false;
@@ -184,13 +186,13 @@ const handleSave = async () => {
   }
 };
 
-
 const handleSubmit = async () => {
   loading.value = true;
   try {
-    docStatus.value = await props.frm.submit(docName.value);
+    docStatus.value = await props.frm.submit(docName);
     saveResult.value = 'Submit successful!';
     saveSuccess.value = true;
+    docStatus.value = 1
   } catch (error) {
     saveResult.value = `Error: ${error.message}`;
     saveSuccess.value = false;
@@ -219,13 +221,14 @@ const filteredFields = computed(() => {
   return result;
 });
 
+
 const statusText = computed(() => {
   if (props.frm.Saved === 0) {
     return 'Not Saved';
   } else if (props.frm.Saved === 1) {
-    if (props.frm.submitable === 1 && docStatus.value !== 1) {
+    if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
       return 'Draft';
-    } else if (docStatus.value === 1) {
+    } else if (props.frm.Submit === 1) {
       return 'Submitted';
     } else {
       return 'Saved';
@@ -237,9 +240,9 @@ const statusClass = computed(() => {
   if (props.frm.Saved === 0) {
     return 'bg-red-200 rounded-2xl text-center';
   } else if (props.frm.Saved === 1) {
-    if (props.frm.submitable === 1 && docStatus.value !== 1) {
+    if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
       return 'bg-red-200 rounded-2xl text-center';
-    } else if (docStatus.value === 1) {
+    } else if (props.frm.Submit === 1) {
       return 'bg-green-200 rounded-2xl text-center';
     } else {
       return 'bg-green-200 rounded-2xl text-center';
@@ -251,9 +254,9 @@ const statusTextClass = computed(() => {
   if (props.frm.Saved === 0) {
     return 'p-2 text-sm w-20 text-red-500';
   } else if (props.frm.Saved === 1) {
-    if (props.frm.submitable === 1 && docStatus.value !== 1) {
+    if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
       return 'p-2 text-sm w-20 text-red-500';
-    } else if (docStatus.value === 1) {
+    } else if (props.frm.Submit === 1) {
       return 'p-2 text-sm w-20 text-green-500';
     } else {
       return 'p-2 text-sm w-20 text-green-500';
@@ -263,8 +266,8 @@ const statusTextClass = computed(() => {
 
 const deletedMessage = ref('');
 const handleDeleteClick = async () => {
-  if (docName.value) {
-    deletedMessage.value = await props.frm.delete(docName.value);
+  if (docName) {
+    deletedMessage.value = await props.frm.delete(docName);
     console.log(deletedMessage.value);
     setTimeout(() => { deletedMessage.value = ''; }, 2500);
   }
@@ -282,7 +285,7 @@ const dropdownOptions = computed(() => {
     },
   ];
 
-  if (!showSubmitButton.value && docStatus.value !== 1) {
+  if (props.frm.Submit !== 1) {
     options.push({
       label: 'Delete',
       icon: () => h(FeatherIcon, { name: "trash" }),

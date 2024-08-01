@@ -7,26 +7,36 @@
       variant="subtle"
       :label="field.label"
       :placeholder="field.label"
-      :disabled="field.read_only"
+      :disabled="isDisabled"
     />
   </div>
 </template>
 
 <script setup>
 import { TextInput } from 'frappe-ui'
-import { defineProps, ref, watch, computed } from 'vue'
+import { defineProps, ref, computed, watch, onMounted } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])
 
 const value = ref(field.value || '')
 
-// Watch for changes in the field value and update frm.doc accordingly
+const isDisabled = computed(() => {
+  return field.read_only == 1 || frm.Docstatus == 1
+})
+
 watch(value, (newValue) => {
   frm.setValue(field.fieldname, newValue)
 })
 
-// Watch for changes in the frm.doc to update the local value
-watch(() => frm.doc[field.fieldname], (newValue) => {
-  value.value = newValue || ''
+onMounted(() => {
+  if (frm.Saved == 1) {
+    value.value = field.value
+  }
+})
+
+watch(frm, (newFrm) => {
+  if (field.value) {
+    value.value = field.value
+  }
 })
 </script>

@@ -2,12 +2,12 @@
   <div class="p-2">
     <Autocomplete
       :options="fetchedOptions"
-      v-model="autocompleteValue"
+      v-model="field.value"
       size="sm"
       variant="subtle"
       :label="field.label"
       :placeholder="field.label"
-      :disabled="field.read_only"
+      :disabled="isDisabled"
       @input="handleInput"
     />
   </div>
@@ -15,12 +15,11 @@
 
 <script setup>
 import { Autocomplete, createListResource } from 'frappe-ui'
-import { defineProps, ref, watch, onMounted } from 'vue'
+import { defineProps, ref, watch, computed, onMounted } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])
 
 const fetchedOptions = ref([])
-const autocompleteValue = ref(field.value || '')
 
 const fetchOptions = async (query = '') => {
   const resource = createListResource({
@@ -30,24 +29,35 @@ const fetchOptions = async (query = '') => {
     orderBy: 'creation desc',
   })
 
-  try {
-    await resource.reload()
-    fetchedOptions.value = resource.data.map(option => option.name)
-  } catch (error) {
-    console.error('Error fetching options:', error)
-    fetchedOptions.value = []
-  }
+  resource.reload().then(() => {
+    let dataArray = resource.data;
+    if (dataArray.length > 0) {
+      fetchedOptions.value = dataArray.map(option => option.name)
+    } else {
+      fetchedOptions.value = []
+    }
+  })
 }
 
 const handleInput = (event) => {
-  fetchOptions(event)
+  fetchOptions(event) 
 }
+
+const isDisabled = computed(() => {
+  return field.read_only == 1 || frm.Docstatus == 1
+})
 
 onMounted(() => {
   fetchOptions()
 })
 
-watch(autocompleteValue, (newValue) => {
-  frm.setValue(field.fieldname, newValue)
+watch(() => field.value, (newValue) => {
+  frm.setValue(field.fieldname, newValue.value)
+})
+
+watch(frm, (newFrm) => {
+  if (field.value) {
+    field.value = field.value
+  }
 })
 </script>
