@@ -104,7 +104,6 @@ export default class Form extends EventEmitter {
   setValue(fieldname, value) {
     this.dirty = true;
     this.doc[fieldname] = value;
-    console.log(this.doc);
   }
 
   isNew() {

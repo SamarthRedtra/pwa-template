@@ -1,8 +1,8 @@
 <template>
   <div class="w-full sm:w-96 bg-white flex justify-center h-screen">
     <div class="w-full flex flex-col">
-      <div class="w-full sm:w-96 bg-gray-200 h-14 shadow-lg fixed top-0 z-10">
-        <div class="p-2 flex pt-3">
+      <div class="w-full sm:w-96 bg-gray-200 h-16 shadow-lg fixed top-0 z-10">
+        <div class=" pr-2 flex pt-3">
           <div></div>
           <FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
           <p class="font-semibold w-fit text-xl pt-[8px] pr-2">{{ frm.doctype }}</p>
@@ -16,6 +16,7 @@
             <User />
           </div>
         </div>
+        <p class=" pl-[2.1rem] b-2 text-xs font-light text-gray-600">{{ docName }}</p>
       </div>
 
       <div class="flex-1 overflow-y-auto custom-scrollbar pt-16 pb-14 p-2">
@@ -28,7 +29,72 @@
         ></component>
       </div>
 
-      <div class="flex w-full sm:w-96 pl-5 pb-1 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
+      <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
+        <Dialog
+          :options="{
+            title: 'Confirm',
+            message: 'Are you sure you want to submit this form ' + props.docname + '?',
+            size: 'sm',
+            actions: [
+              {
+                label: 'Confirm',
+                variant: 'solid',
+                onClick: confirmSubmit
+              },
+              {
+                label: 'Cancel',
+                variant: 'subtle',
+                onClick: () => {
+                  dialog1 = false; 
+                },
+              },
+            ],
+          }"
+          v-if="dialog1"
+          v-model:show="dialog1"
+        /> 
+        <Dialog
+          :options="{
+            title: 'Confirm Delete',
+            message: 'Are you sure you want to delete this form ' + props.docname + '?',
+            size: 'sm',
+            actions: [
+              {
+                label: 'Delete',
+                variant: 'solid',
+                onClick: confirmDelete
+              },
+              {
+                label: 'Cancel',
+                variant: 'subtle',
+                onClick: () => { dialogDelete = false; },
+              },
+            ],
+          }"
+          v-if="dialogDelete"
+          v-model:show="dialogDelete"
+        />
+        <Dialog
+          :options="{
+            title: 'Confirm Cancel',
+            message: 'Are you sure you want to cancel this form ' + props.docname + '?',
+            size: 'sm',
+            actions: [
+              {
+                label: 'Confirm',
+                variant: 'solid',
+                onClick: confirmCancel
+              },
+              {
+                label: 'Cancel',
+                variant: 'subtle',
+                onClick: () => { dialogCancel = false; },
+              },
+            ],
+          }"
+          v-if="dialogCancel"
+          v-model:show="dialogCancel"
+        />
         <div class="pt-1 w-full h-full">
           <Button
             v-if="props.frm.Saved == 0"
@@ -44,30 +110,30 @@
             @click="handleSave"
           />
           <Button
-            v-else-if="docStatus === 0 && Saved == 1 && submitable == 1 && Submitable == 0"
+            v-else-if="docStatus === 1 && Saved == 1 && submitable == 1"
             :variant="'solid'"
-            theme="gray"
+            theme="red"
             size="sm"
-            label="Submit"
+            label="Cancel"
             :loading="loading"
-            :loadingText="'Submitting...'"
+            :loadingText="'Cancelling...'"
             :disabled="false"
             :link="null"
             class="w-[21rem] h-full p-2"
-            @click="handleSubmit"
+            @click="handleCancel" 
           />
           <Button
           v-else
           :variant="'solid'"
-          theme="red"
+          theme="gray"
           size="sm"
-          label="Cancel"
+          label="Submit"
           :loading="loading"
-          :loadingText="'Cancelling...'"
+          :loadingText="'Submitting...'"
           :disabled="false"
           :link="null"
           class="w-[21rem] h-full p-2"
-          @click="handleCancel"    
+          @click="handleSubmit"   
           />
           <div v-if="saveResult" 
                :class="['fixed bottom-[4rem] leading-5 pr-[65rem] pl-[2.5rem] z-50 w-full sm:w-96', saveSuccess ? 'animate-slide-in' : 'animate-slide-out']">
@@ -86,7 +152,7 @@
             </div>
           </div>
         </div>
-        <div class="p-2 pl-0 pt-2.5">
+        <div class="p-2 pl-0 pt-1.5">
           <Dropdown :options="dropdownOptions">
             <Button>
               <template #icon>
@@ -120,7 +186,7 @@ import Link from './components/Link.vue';
 import User from './components/User.vue';
 import Currency from './components/Currency.vue';
 import { useRouter } from 'vue-router';
-import { FeatherIcon, Avatar, Dropdown, Button, Dialog } from 'frappe-ui';
+import { FeatherIcon, Dropdown, Button, Dialog } from 'frappe-ui';
 
 const props = defineProps({
   frm: Object,
@@ -155,13 +221,19 @@ const docStatus = ref(props.frm.Docstatus);
 const formAfterSave = ref({})
 const Saved = ref(props.frm.Saved);
 const Submitable = ref(props.frm.Submit);
+const dialog1 = ref(false);
+const dialogDelete = ref(false);
+const dialogCancel = ref(false); 
+
 
 watch(() => props.frm, (newForm) => {
   docStatus.value = newForm.Docstatus;
   Saved.value = newForm.Saved;
   Submitable.value = newForm.Submit;
   submitable.value = newForm.submitable;
+
 });
+console.log(Submitable.value, docStatus.value, Saved.value, submitable.value)
 
 
 props.frm.name = props.docname
@@ -186,25 +258,40 @@ const handleSave = async () => {
   }
 };
 
-const handleSubmit = async () => {
+const confirmSubmit = async () => {
   loading.value = true;
   try {
     docStatus.value = await props.frm.submit(docName);
     saveResult.value = 'Submit successful!';
     saveSuccess.value = true;
     docStatus.value = 1
+    dialog1.value = false;
   } catch (error) {
     saveResult.value = `Error: ${error.message}`;
     saveSuccess.value = false;
     console.error(`Error: ${error.message}`);
+    dialog1.value = false;
   } finally {
     loading.value = false;
     setTimeout(() => { saveResult.value = ''; }, 2500);
   }
 };
 
-const handleCancel = async () => {
+const confirmCancel = async () => {
   console.log(docStatus.value)
+  dialogCancel.value = false; 
+};
+
+const handleSubmit = () => {
+  dialog1.value = true;
+};
+
+const handleDeleteClick = () => {
+  dialogDelete.value = true;
+};
+
+const handleCancel = () => {
+  dialogCancel.value = true; 
 };
 
 const filteredFields = computed(() => {
@@ -265,11 +352,12 @@ const statusTextClass = computed(() => {
 });
 
 const deletedMessage = ref('');
-const handleDeleteClick = async () => {
+const confirmDelete = async () => {
   if (docName) {
     deletedMessage.value = await props.frm.delete(docName);
     console.log(deletedMessage.value);
     setTimeout(() => { deletedMessage.value = ''; }, 2500);
+    dialogDelete.value = false;
   }
 };
 

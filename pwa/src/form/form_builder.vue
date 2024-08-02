@@ -28,7 +28,7 @@
         ></component>
       </div>
 
-      <div class="flex w-full sm:w-96 pl-5 pb-1 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
+      <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
         <div class="pt-1 w-full">
           <Button
             v-if="!showSubmitButton && docStatus !== 1"
@@ -40,7 +40,7 @@
             :loadingText="'Saving...'"
             :disabled="false"
             :link="null"
-            class="w-[21rem] h-[2.30rem] p-2"
+            class="w-[21rem] h-full p-2"
             @click="handleSave"
           />
           <Button
@@ -86,7 +86,7 @@
             </div>
           </div>
         </div>
-        <div class="p-2 pl-0 pt-2.5">
+        <div class="p-2 pl-0 pt-[5px]">
           <Dropdown :options="dropdownOptions">
             <Button>
               <template #icon>
@@ -172,7 +172,6 @@ const handleSave = async () => {
       showSubmitButton.value = true;
     }
     formAfterSave.value = props.frm.doc;
-    console.log(formAfterSave.value);
     router.push({ path: '/showform', query: { docname: name } });
   } catch (error) {
     saveResult.value = `Error: ${error.message}`;
