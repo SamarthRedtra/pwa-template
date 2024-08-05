@@ -123,6 +123,7 @@ export default class Form extends EventEmitter {
           this.Saved = 1;
           this.updateFields();
           this.name = this.doc.name;
+          this.Docstatus = 0;
           return response.name;
         })
         .catch(error => {

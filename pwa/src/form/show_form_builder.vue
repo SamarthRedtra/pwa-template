@@ -50,8 +50,7 @@
               },
             ],
           }"
-          v-if="dialog1"
-          v-model:show="dialog1"
+          v-model="dialog1"
         /> 
         <Dialog
           :options="{
@@ -71,8 +70,7 @@
               },
             ],
           }"
-          v-if="dialogDelete"
-          v-model:show="dialogDelete"
+          v-model="dialogDelete"
         />
         <Dialog
           :options="{
@@ -92,8 +90,7 @@
               },
             ],
           }"
-          v-if="dialogCancel"
-          v-model:show="dialogCancel"
+          v-model="dialogCancel"
         />
         <div class="pt-1 w-full h-full">
           <Button
@@ -110,7 +107,7 @@
             @click="handleSave"
           />
           <Button
-            v-else-if="docStatus === 1 && Saved == 1 && submitable == 1"
+            v-else-if="props.frm.Docstatus === 1 && props.frm.Saved == 1 && props.frm.submitable == 1"
             :variant="'solid'"
             theme="red"
             size="sm"
@@ -152,7 +149,7 @@
             </div>
           </div>
         </div>
-        <div class="p-2 pl-0 pt-1.5">
+        <div class="p-2 pl-0 pt-[5px]">
           <Dropdown :options="dropdownOptions">
             <Button>
               <template #icon>
@@ -231,9 +228,8 @@ watch(() => props.frm, (newForm) => {
   Saved.value = newForm.Saved;
   Submitable.value = newForm.Submit;
   submitable.value = newForm.submitable;
-
+  console.log(Submitable.value, docStatus.value, Saved.value, submitable.value)
 });
-console.log(Submitable.value, docStatus.value, Saved.value, submitable.value)
 
 
 props.frm.name = props.docname
