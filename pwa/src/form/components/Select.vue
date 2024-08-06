@@ -7,7 +7,7 @@
       variant="subtle"
       :label="field.label"
       :placeholder="field.label"
-      :disabled="field.read_only"
+      :disabled="isDisabled"
       hide-search="true"
     />
   </div>
@@ -15,13 +15,15 @@
 
 <script setup>
 import { Autocomplete } from 'frappe-ui'
-import { defineProps, watch } from 'vue'
+import { defineProps, computed, watch } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])
 
+const isDisabled = computed(() => {
+  return field.read_only == 1 || frm.Docstatus == 1 || frm.Docstatus == 2
+})
 
 watch(() => field.value, (newValue) => {
-  frm.setValue(field.fieldname, newValue.value);
+  frm.setValue(field.fieldname, newValue);
 });
-
 </script>

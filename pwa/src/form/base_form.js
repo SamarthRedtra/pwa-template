@@ -1,18 +1,23 @@
 import { reactive, ref, computed } from 'vue';
 import EventEmitter from './eventemiitor';
+import { useRouter } from 'vue-router';
 import { createListResource, createResource, createDocumentResource } from 'frappe-ui';
 
 export default class Form extends EventEmitter {
-  constructor(doctype, name = null) {
+  constructor(doctype, frm, name = null) {
     super();
     this.doctype = doctype;
     this.name = name;
     this.fields = reactive([]);
     this.dirty = false;
+    this.Frm = frm;
     this.Docstatus = ref(0);
     this.Saved = ref(0);
     this.Submit = ref(0);
-    
+    this.Amend = ref(0);
+    this.router = useRouter();
+    console.log(this.doctype, this.frm, doctype, frm)
+
     this.doc = reactive({
       docstatus: 0, 
     });
@@ -30,7 +35,7 @@ export default class Form extends EventEmitter {
     myHeaders.append('Cookie', 'full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=');
   
     const raw = JSON.stringify({
-      form: 'Test_Form',
+      form: this.Frm,
       doctype: this.doctype,
     });
   
@@ -75,7 +80,7 @@ export default class Form extends EventEmitter {
         this.Docstatus = docValues.data[0].docstatus;
         this.Saved = 1
       }
-      else if(docValues.data[0].docstatus == 1){
+      else if(docValues.data[0].docstatus == 1 || docValues.data[0].docstatus == 2){
         this.Docstatus = docValues.data[0].docstatus;
         this.Submit = 1;
         this.Saved = 1;
@@ -117,6 +122,25 @@ export default class Form extends EventEmitter {
         doctype: this.doctype,
       });
   
+      const keysToRemove = [
+        'creation', 'docstatus', 'idx', 
+        'modified', 'modified_by', 'owner', 'doctype'
+      ];
+      console.log(this.doc)
+      keysToRemove.forEach(key => {
+        delete this.doc[key];
+      });
+  
+      if(this.doc.name){
+        let currentName = this.doc.name;
+        this.doc.amended_from = currentName;
+    
+        let nameParts = currentName.split('-');
+        let baseName = nameParts[0];
+        let newIncrement = nameParts.length > 1 ? parseInt(nameParts[1]) + 1 : 1;
+        this.doc.name = `${baseName}-${newIncrement}`;
+      }
+  
       return savedoc.insert.submit(this.doc)
         .then(response => {
           Object.assign(this.doc, response);
@@ -134,6 +158,7 @@ export default class Form extends EventEmitter {
       return Promise.reject(new Error('Validation failed'));
     }
   }
+  
   
   
   
@@ -168,6 +193,7 @@ export default class Form extends EventEmitter {
   }
   
 
+
   delete(name){
     const val = ref('')
     const deletedoc = createDocumentResource(
@@ -187,8 +213,54 @@ export default class Form extends EventEmitter {
       return val.value;
     });
   }
-  cancel() {}
+  cancel(name) {
+    this.dirty = false;
+      const submitdoc = createListResource({
+        doctype: this.doctype,
+        filters: {
+          name: name,
+        }
+      });
+  
+      return submitdoc.reload()
+        .then(() => submitdoc.setValue.submit({
+          name: name,
+          docstatus:2,
+        }))
+        .then(response => {
+          this.Docstatus = 2;
+          return response.docstatus;
+        })
+        .catch(error => {
+          console.log(error);
+          throw new Error('Error Canceling document');
+        });
+    }
+  
+    async amend() {
+      const keysToRemove = [
+        'name', 'creation', 'amended_from', 'docstatus', 'idx', 
+        'modified', 'modified_by', 'owner', 'doctype'
+      ];
+    
+      keysToRemove.forEach(key => {
+        delete this.doc[key];
+      });
 
+
+    
+      const deletedoc = createDocumentResource({
+        doctype: this.doctype,
+        name: this.name,
+      });
+    
+      try {
+        this.router.back();
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+    
   isDirty() {
     return this.dirty;
   }

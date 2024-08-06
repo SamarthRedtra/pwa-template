@@ -1,9 +1,8 @@
 <template>
   <div class="w-full sm:w-96 bg-white flex justify-center h-screen">
     <div class="w-full flex flex-col">
-      <div class="w-full sm:w-96 bg-gray-200 h-16 shadow-lg fixed top-0 z-10">
+      <div class="w-full sm:w-96 bg-white h-16 shadow-lg fixed top-0 z-10">
         <div class=" pr-2 flex pt-3">
-          <div></div>
           <FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
           <p class="font-semibold w-fit text-xl pt-[8px] pr-2">{{ frm.doctype }}</p>
           <div :class="statusClass">
@@ -19,17 +18,19 @@
         <p class=" pl-[2.1rem] b-2 text-xs font-light text-gray-600">{{ docName }}</p>
       </div>
 
-      <div class="flex-1 overflow-y-auto custom-scrollbar pt-16 pb-14 p-2">
-        <component
-          v-for="field in filteredFields"
-          :key="field.fieldname"
-          :is="fieldMap[field.fieldtype]"
-          :field="field"
-          :frm="frm"
-        ></component>
+      <div class="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-14 p-2 bg-gray-100">
+        <div class=" bg-white rounded-lg">
+          <component
+            v-for="field in filteredFields"
+            :key="field.fieldname"
+            :is="fieldMap[field.fieldtype]"
+            :field="field"
+            :frm="frm"
+          ></component>
+        </div>
       </div>
 
-      <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
+      <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-white justify-center shadow-lg">
         <Dialog
           :options="{
             title: 'Confirm',
@@ -92,7 +93,7 @@
           }"
           v-model="dialogCancel"
         />
-        <div class="pt-1 w-full h-full">
+        <div class="pt-1 w-fit h-full">
           <Button
             v-if="props.frm.Saved == 0"
             :variant="'solid'"
@@ -103,7 +104,7 @@
             :loadingText="'Saving...'"
             :disabled="props.frm.saved"
             :link="null"
-            class="w-[21rem] h-full p-2"
+            class="w-[18rem] h-full p-2"
             @click="handleSave"
           />
           <Button
@@ -116,8 +117,21 @@
             :loadingText="'Cancelling...'"
             :disabled="false"
             :link="null"
-            class="w-[21rem] h-full p-2"
+            class="w-[18rem] h-full p-2"
             @click="handleCancel" 
+          />
+          <Button
+            v-else-if="props.frm.Docstatus == 2"
+            :variant="'solid'"
+            theme="gray"
+            size="sm"
+            label="Amend"
+            :loading="loading"
+            :loadingText="'Amending...'"
+            :disabled="false"
+            :link="null"
+            class="w-[18rem] h-full p-2"
+            @click="handleAmend"
           />
           <Button
           v-else
@@ -129,7 +143,7 @@
           :loadingText="'Submitting...'"
           :disabled="false"
           :link="null"
-          class="w-[21rem] h-full p-2"
+          class="w-[18rem] h-full p-2"
           @click="handleSubmit"   
           />
           <div v-if="saveResult" 
@@ -148,8 +162,15 @@
               {{ deletedMessage }}
             </div>
           </div>
+          <div v-if="cancelResult" 
+            :class="['fixed bottom-[4rem] leading-5 pr-[65rem] pl-[2.5rem] z-50 w-full sm:w-96', cancelSuccess ? 'animate-slide-in' : 'animate-slide-out']">
+            <div class="rounded w-[20rem] h-fit p-2 text-left bg-red-200 text-red-500">
+              <FeatherIcon name="x" class="inline w-4 h-4 mr-2" />
+              {{ cancelResult }}
+            </div>
+          </div>
         </div>
-        <div class="p-2 pl-0 pt-[5px]">
+        <div class="p-2 pr-2 pt-[5px]">
           <Dropdown :options="dropdownOptions">
             <Button>
               <template #icon>
@@ -188,6 +209,8 @@ import { FeatherIcon, Dropdown, Button, Dialog } from 'frappe-ui';
 const props = defineProps({
   frm: Object,
   docname: String,
+  frmname: String,
+  doctype: String,
 });
 
 const fieldMap = {
@@ -213,14 +236,17 @@ const loading = ref(false);
 const saveResult = ref(''); 
 const saveSuccess = ref(false);
 const submitable = ref(props.frm.submitable)
-const docName = props.docname;
+const docName = ref(props.docname);
 const docStatus = ref(props.frm.Docstatus);
 const formAfterSave = ref({})
 const Saved = ref(props.frm.Saved);
 const Submitable = ref(props.frm.Submit);
 const dialog1 = ref(false);
 const dialogDelete = ref(false);
-const dialogCancel = ref(false); 
+const dialogCancel = ref(false);
+const Amend = ref(props.frm.Amend);
+const cancelResult = ref('');
+const cancelSuccess = ref('');
 
 
 watch(() => props.frm, (newForm) => {
@@ -228,18 +254,21 @@ watch(() => props.frm, (newForm) => {
   Saved.value = newForm.Saved;
   Submitable.value = newForm.Submit;
   submitable.value = newForm.submitable;
-  console.log(Submitable.value, docStatus.value, Saved.value, submitable.value)
+  Amend.value = newForm.Amend;
 });
 
 
 props.frm.name = props.docname
+props.frm.doctype = props.doctype
+props.frm.Frm = props.frnname
+
  
 const handleSave = async () => {
   loading.value = true;
-  submitable = props.frm.submitable;
+  submitable.value = props.frm.submitable;
   try {
     const name = await props.frm.save(); 
-    docName = name;
+    docName.value = name;
     saveResult.value = 'Save successful!';
     saveSuccess.value = true;
     formAfterSave.value = props.frm.doc;
@@ -254,10 +283,30 @@ const handleSave = async () => {
   }
 };
 
+
+const handleAmend = async () => {
+  loading.value = true;
+  try {
+    const response = await props.frm.amend();
+    docName.value = response;
+    saveResult.value = 'Amend successful!';
+    saveSuccess.value = true;
+    router.push({ path: '/showform', query: { docname: response } });
+  } catch (error) {
+    saveResult.value = `Error: ${error.message}`;
+    saveSuccess.value = false;
+    console.error(`Error: ${error.message}`);
+  } finally {
+    loading.value = false;
+    setTimeout(() => { saveResult.value = ''; }, 2500);
+  }
+};
+
+
 const confirmSubmit = async () => {
   loading.value = true;
   try {
-    docStatus.value = await props.frm.submit(docName);
+    docStatus.value = await props.frm.submit(docName.value);
     saveResult.value = 'Submit successful!';
     saveSuccess.value = true;
     docStatus.value = 1
@@ -274,8 +323,19 @@ const confirmSubmit = async () => {
 };
 
 const confirmCancel = async () => {
-  console.log(docStatus.value)
-  dialogCancel.value = false; 
+  dialogCancel.value = false;
+  try {
+    await props.frm.cancel(docName.value); 
+    cancelResult.value = 'Cancel successful!';
+    cancelSuccess.value = true;
+  } catch (error) {
+    cancelResult.value = `Error: ${error.message}`;
+    cancelSuccess.value = false;
+    console.error(`Error: ${error.message}`);
+  } finally {
+    loading.value = false;
+    setTimeout(() => { cancelResult.value = ''; }, 2500);
+  }
 };
 
 const handleSubmit = () => {
@@ -287,7 +347,7 @@ const handleDeleteClick = () => {
 };
 
 const handleCancel = () => {
-  dialogCancel.value = true; 
+  dialogCancel.value = true;
 };
 
 const filteredFields = computed(() => {
@@ -311,9 +371,11 @@ const statusText = computed(() => {
   } else if (props.frm.Saved === 1) {
     if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
       return 'Draft';
+    } else if (props.frm.Docstatus === 2) {
+      return 'Cancelled';
     } else if (props.frm.Submit === 1) {
       return 'Submitted';
-    } else {
+    }  else {
       return 'Saved';
     }
   }
@@ -325,9 +387,11 @@ const statusClass = computed(() => {
   } else if (props.frm.Saved === 1) {
     if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
       return 'bg-red-200 rounded-2xl text-center';
-    } else if (props.frm.Submit === 1) {
+    } else if (props.frm.Docstatus === 2) {
+      return 'bg-red-200 rounded-2xl text-center';
+    }else if (props.frm.Submit === 1) {
       return 'bg-green-200 rounded-2xl text-center';
-    } else {
+    }  else {
       return 'bg-green-200 rounded-2xl text-center';
     }
   }
@@ -339,9 +403,11 @@ const statusTextClass = computed(() => {
   } else if (props.frm.Saved === 1) {
     if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
       return 'p-2 text-sm w-20 text-red-500';
+    } else if (props.frm.Docstatus === 2) {
+      return 'p-2 text-sm w-20 text-red-500';
     } else if (props.frm.Submit === 1) {
       return 'p-2 text-sm w-20 text-green-500';
-    } else {
+    }  else {
       return 'p-2 text-sm w-20 text-green-500';
     }
   }
@@ -349,8 +415,8 @@ const statusTextClass = computed(() => {
 
 const deletedMessage = ref('');
 const confirmDelete = async () => {
-  if (docName) {
-    deletedMessage.value = await props.frm.delete(docName);
+  if (docName.value) {
+    deletedMessage.value = await props.frm.delete(docName.value);
     console.log(deletedMessage.value);
     setTimeout(() => { deletedMessage.value = ''; }, 2500);
     dialogDelete.value = false;
@@ -369,7 +435,7 @@ const dropdownOptions = computed(() => {
     },
   ];
 
-  if (props.frm.Submit !== 1) {
+  if (props.frm.Docstatus !== 1) {
     options.push({
       label: 'Delete',
       icon: () => h(FeatherIcon, { name: "trash" }),

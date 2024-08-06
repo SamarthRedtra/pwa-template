@@ -21,7 +21,7 @@ const props = defineProps({
 const fieldValue = ref(0)
 
 const isDisabled = computed(() => {
-  return props.field.read_only == 1 || props.frm.Docstatus == 1
+  return props.field.read_only == 1 || props.frm.Docstatus == 1 || props.frm.Docstatus == 2
 })
 
 watch(fieldValue, (newValue) => {
@@ -30,9 +30,9 @@ watch(fieldValue, (newValue) => {
 
 watch(() => props.field.value, (newValue) => {
   if (newValue === 0) {
-    fieldValue.value = 1
+    fieldValue.value = 0
   } else {
-    fieldValue.value = newValue
+    fieldValue.value = newValue 
   }
 }, { immediate: true })
 

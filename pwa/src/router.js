@@ -24,9 +24,14 @@ const routes = [
     component: () => import('@/pages/SignUp.vue'),
   },
   {
-    path: '/',
+    path: '/newform',
     name: 'Form',
     component: () => import('@/pages/Form.vue'),
+  },
+  {
+    path: '/',
+    name: 'LandingPage',
+    component: () => import('@/pages/LandingPage.vue'),
   },
   {
     path: '/showform',

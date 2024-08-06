@@ -1,7 +1,7 @@
 <template>
   <div class="w-full sm:w-96 bg-white flex justify-center h-screen">
     <div class="w-full flex flex-col">
-      <div class="w-full sm:w-96 bg-gray-200 h-14 shadow-lg fixed top-0 z-10">
+      <div class="w-full sm:w-96 bg-white h-14 shadow-lg fixed top-0 z-10">
         <div class="p-2 flex pt-3">
           <div></div>
           <FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
@@ -18,18 +18,20 @@
         </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto custom-scrollbar pt-16 pb-14 p-2">
-        <component
-          v-for="field in filteredFields"
-          :key="field.fieldname"
-          :is="fieldMap[field.fieldtype]"
-          :field="field"
-          :frm="frm"
-        ></component>
+      <div class="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-14 p-2 bg-gray-200">
+        <div class=" p-2 bg-white rounded-lg">
+          <component
+            v-for="field in filteredFields"
+            :key="field.fieldname"
+            :is="fieldMap[field.fieldtype]"
+            :field="field"
+            :frm="frm"
+          ></component>
+        </div>
       </div>
 
-      <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-gray-200 shadow-lg">
-        <div class="pt-1 w-full">
+      <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-white shadow-lg justify-center">
+        <div class="pt-1 w-fit">
           <Button
             v-if="!showSubmitButton && docStatus !== 1"
             :variant="'solid'"
@@ -40,7 +42,7 @@
             :loadingText="'Saving...'"
             :disabled="false"
             :link="null"
-            class="w-[21rem] h-full p-2"
+            class="w-[18rem] h-full p-2"
             @click="handleSave"
           />
           <Button
@@ -53,7 +55,7 @@
             :loadingText="'Cancelling...'"
             :disabled="false"
             :link="null"
-            class="w-[21rem] h-[2.30rem] p-2"
+            class="w-[18rem] h-[2.30rem] p-2"
             @click="handleCancel"
           />
           <Button
@@ -66,7 +68,7 @@
             :loadingText="'Submitting...'"
             :disabled="false"
             :link="null"
-            class="w-[21rem] h-[2.30rem] p-2"
+            class="w-[18rem] h-[2.30rem] p-2"
             @click="handleSubmit"
           />
           <div v-if="saveResult" 
@@ -86,7 +88,7 @@
             </div>
           </div>
         </div>
-        <div class="p-2 pl-0 pt-[5px]">
+        <div class="p-2 pr-2 pt-[5px]">
           <Dropdown :options="dropdownOptions">
             <Button>
               <template #icon>
@@ -123,7 +125,9 @@ import { useRouter } from 'vue-router';
 import { FeatherIcon, Avatar, Dropdown, Button } from 'frappe-ui';
 
 const props = defineProps({
-  frm: Object
+  frm: Object,
+  doctype: String,
+  frnname: String,
 });
 
 const fieldMap = {
@@ -154,6 +158,10 @@ const docName = ref('');
 const docStatus = ref(0);
 const formAfterSave = ref({})
 
+props.frm.doctype = props.doctype
+props.frm.Frm = props.frnname
+
+
 watch(docStatus, (newStatus) => {
   if (newStatus === 1) {
     showSubmitButton.value = false;
@@ -172,7 +180,7 @@ const handleSave = async () => {
       showSubmitButton.value = true;
     }
     formAfterSave.value = props.frm.doc;
-    router.push({ path: '/showform', query: { docname: name } });
+    router.push({ path: '/showform', query: { docname: name, frmname: props.frm.Frm, doctype: props.frm.doctype } });
   } catch (error) {
     saveResult.value = `Error: ${error.message}`;
     saveSuccess.value = false;

@@ -23,7 +23,7 @@ const displayValue = ref("");
 const fetchedOptions = ref([]); 
 
 const isDisabled = computed(() => {
-  return field.read_only == 1 || frm.Docstatus == 1;
+  return field.read_only == 1 || frm.Docstatus == 1 || frm.Docstatus == 2;
 });
 
 const fetchOptions = async () => {

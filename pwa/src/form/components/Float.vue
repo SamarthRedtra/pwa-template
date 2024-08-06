@@ -21,7 +21,7 @@ const { field, frm } = defineProps(['field', 'frm'])
 const value = ref("")
 
 const isDisabled = computed(() => {
-  return field.read_only == 1 || frm.Docstatus == 1
+  return field.read_only == 1 || frm.Docstatus == 1 || frm.Docstatus == 2
 })
 
 // Initialize value with three decimal places on mount
