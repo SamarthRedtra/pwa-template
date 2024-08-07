@@ -23,6 +23,7 @@ const isDisabled = computed(() => {
   return field.read_only == 1 || frm.Docstatus == 1 || frm.Docstatus == 2
 })
 
+
 watch(frm, (newFrm) => {
   if(field.value){
     value.value = field.value

@@ -34,6 +34,11 @@ const routes = [
     component: () => import('@/pages/LandingPage.vue'),
   },
   {
+    path: '/list',
+    name: 'ListPage',
+    component: () => import('@/pages/ListPage.vue'),
+  },
+  {
     path: '/showform',
     name: 'Showform',
     component: () => import('@/pages/ShowForm.vue'),

@@ -16,7 +16,6 @@ export default class Form extends EventEmitter {
     this.Submit = ref(0);
     this.Amend = ref(0);
     this.router = useRouter();
-    console.log(this.doctype, this.frm, doctype, frm)
 
     this.doc = reactive({
       docstatus: 0, 
@@ -126,7 +125,6 @@ export default class Form extends EventEmitter {
         'creation', 'docstatus', 'idx', 
         'modified', 'modified_by', 'owner', 'doctype'
       ];
-      console.log(this.doc)
       keysToRemove.forEach(key => {
         delete this.doc[key];
       });
@@ -255,6 +253,7 @@ export default class Form extends EventEmitter {
       });
     
       try {
+        this.Docstatus = 0;
         this.router.back();
       } catch (error) {
         console.error('Error:', error);

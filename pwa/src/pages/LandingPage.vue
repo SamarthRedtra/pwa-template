@@ -65,14 +65,12 @@ Links.reload().then(() => {
 	frm: item.form_name,
 	doctype: item.doctype_name,
   }));
-  console.log(Links);
 });
 
 const navigateToForm = (link) => {
   router.push({
-	name: 'Form',
+	name: 'ListPage',
 	query: {
-	  id: link.id,
 	  frmname: link.frm,
 	  doctype: link.doctype,
 	}

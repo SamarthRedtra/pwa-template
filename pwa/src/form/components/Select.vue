@@ -24,6 +24,6 @@ const isDisabled = computed(() => {
 })
 
 watch(() => field.value, (newValue) => {
-  frm.setValue(field.fieldname, newValue);
+  frm.setValue(field.fieldname, newValue.value);
 });
 </script>

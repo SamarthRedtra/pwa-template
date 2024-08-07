@@ -15,8 +15,6 @@ const formStore = useFormStore();
 const form = computed(() => formStore.form);
 const route = useRoute();
 
-console.log(typeof(route.query.frmname))
-
 onMounted(async () => {
   await formStore.initForm();
 });

@@ -260,7 +260,7 @@ watch(() => props.frm, (newForm) => {
 
 props.frm.name = props.docname
 props.frm.doctype = props.doctype
-props.frm.Frm = props.frnname
+props.frm.Frm = props.frmname
 
  
 const handleSave = async () => {
@@ -452,6 +452,7 @@ const dropdownOptions = computed(() => {
 const router = useRouter();
 
 const goBack = () => {
+  props.frm.doc = {};
   router.back();
 };
 </script>
