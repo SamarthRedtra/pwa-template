@@ -23,7 +23,6 @@ export default class Form extends EventEmitter {
     this.submitable = ref(0);
 
     this.on('name', (value) => {
-      console.log('Name changed to: ', value);
       this.dirty = true;
     });
   }
@@ -58,10 +57,11 @@ export default class Form extends EventEmitter {
       const result = await response.json();
       this.submitable = result.message.is_submittable;
       this.fields = result.message.fields;
+      this.doc = {};
     } catch (error) {
       console.error('Error fetching form metadata: ', error);
     }
-  
+    
     if (this.name != null) {
       const docValues = createListResource(
         {
@@ -128,8 +128,11 @@ export default class Form extends EventEmitter {
       keysToRemove.forEach(key => {
         delete this.doc[key];
       });
+
+      console.log(this.doc.name);
   
       if(this.doc.name){
+        console.log(this.doc.name);
         let currentName = this.doc.name;
         this.doc.amended_from = currentName;
     
@@ -211,6 +214,7 @@ export default class Form extends EventEmitter {
       return val.value;
     });
   }
+  
   cancel(name) {
     this.dirty = false;
       const submitdoc = createListResource({
@@ -237,7 +241,7 @@ export default class Form extends EventEmitter {
   
     async amend() {
       const keysToRemove = [
-        'name', 'creation', 'amended_from', 'docstatus', 'idx', 
+        'creation', 'docstatus', 'idx', 
         'modified', 'modified_by', 'owner', 'doctype'
       ];
     
@@ -254,7 +258,14 @@ export default class Form extends EventEmitter {
     
       try {
         this.Docstatus = 0;
-        this.router.back();
+        this.Saved = 0;
+        this.router.push({
+          name: 'Form',
+          query: {
+            frmname: this.Frm,
+            doctype: this.doctype,
+          }
+        });
       } catch (error) {
         console.error('Error:', error);
       }

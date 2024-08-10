@@ -1,15 +1,16 @@
 <template>
     <div>
-      <Avatar :shape="'square'" :image="null" :label="userName" size="xl"/>
+      <Avatar :shape="'square'" :image="ImageUrl" :label="userName" size="xl"/>
     </div>
   </template>
   
   <script setup>
-  import { onMounted, watch, computed } from 'vue'
+  import { onMounted, watch, computed, ref } from 'vue'
   import { Avatar, createListResource } from 'frappe-ui'
   import { session } from '../../data/session';
   
   const userName = computed(() => session.user)
+  const imageBaseUrl = ref('')
   
   onMounted(() => {
     if (userName.value) {
@@ -23,6 +24,14 @@
     }
   })
 
+  const currentURL = ref(window.location.href);
+  const baseURL = computed(() => {
+    const url = new URL(currentURL.value);
+    return `${url.protocol}//${url.hostname}`;
+  });
+  const ImageUrl = computed(() => `${baseURL.value}:8001${imageBaseUrl.value}`);
+  
+
   const userDetails = createListResource({
     doctype: "User",
     fields: ['*'],
@@ -32,6 +41,7 @@
   })
 
   userDetails.reload()
+  .then(() => imageBaseUrl.value = userDetails.data[0].user_image)
   </script>
   
   <style scoped>

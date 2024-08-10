@@ -33,7 +33,7 @@
       <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-white shadow-lg justify-center">
         <div class="pt-1 w-fit">
           <Button
-            v-if="!showSubmitButton && docStatus !== 1"
+            v-if="props.frm.Saved == 0"
             :variant="'solid'"
             theme="gray"
             size="sm"
@@ -121,6 +121,7 @@ import Float from './components/Float.vue';
 import Link from './components/Link.vue';
 import User from './components/User.vue';
 import Currency from './components/Currency.vue';
+import Attach from './components/Attach.vue';
 import { useRouter } from 'vue-router';
 import { FeatherIcon, Avatar, Dropdown, Button } from 'frappe-ui';
 
@@ -146,7 +147,8 @@ const fieldMap = {
   'Small Text': Textarea,
   Float: Float,
   Link: Link,
-  Currency: Currency
+  Currency: Currency,
+  Attach: Attach
 };
 
 const loading = ref(false);
@@ -160,6 +162,7 @@ const formAfterSave = ref({})
 
 props.frm.doctype = props.doctype
 props.frm.Frm = props.frnname
+
 
 
 watch(docStatus, (newStatus) => {
@@ -306,8 +309,14 @@ const dropdownOptions = computed(() => {
 const router = useRouter();
 
 const goBack = () => {
-  router.back();
-};
+  router.push({
+    name: 'ListPage',
+    query: {
+      frmname: props.frm.Frm,
+      doctype: props.frm.doctype,
+    }
+  });
+}
 </script>
 
 <style scoped>

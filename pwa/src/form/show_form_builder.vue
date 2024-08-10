@@ -452,8 +452,19 @@ const dropdownOptions = computed(() => {
 const router = useRouter();
 
 const goBack = () => {
-  props.frm.doc = {};
-  router.back();
+  props.frm.doc = {
+    docstatus: 0, 
+  };
+  props.frm.name = null;
+  props.frm.fields = [];
+  props.frm.Docstatus = 0;
+  router.push({
+    name: 'ListPage',
+    query: {
+      frmname: props.frm.Frm,
+      doctype: props.frm.doctype,
+    }
+  });
 };
 </script>
 
