@@ -26,6 +26,7 @@
   import Textarea from './Textarea.vue'
   import Float from './Float.vue'
   import Link from './Link.vue'
+  import Currency from './Currency.vue'
   
   const { field, frm } = defineProps(['field', 'frm'])
   
@@ -45,8 +46,7 @@
     'Small Text': Textarea,
     Float: Float,
     Link: Link,
-
-
+    Currency: Currency,
   }
   
   const sectionFields = computed(() => {

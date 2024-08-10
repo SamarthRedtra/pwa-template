@@ -4,7 +4,7 @@ import Form from '../form/base_form.js'
 
 export const useFormStore = defineStore('form', {
   state: () => ({
-    form: reactive(new Form("Customer"))
+    form: reactive(new Form("Sampel"))
   }),
   actions: {
     async initForm() {

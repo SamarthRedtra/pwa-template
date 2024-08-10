@@ -13,12 +13,22 @@
   
   <script setup>
   import { FormControl } from 'frappe-ui'
-  import { defineProps, watch, ref, onMounted } from 'vue'
+  import { defineProps, watch, ref, onMounted, computed } from 'vue'
   
   const { field, frm } = defineProps(['field', 'frm'])
   
   const value = ref("")
   
+  const isDisabled = computed(() => {
+    return field.read_only == 1 || frm.Docstatus == 1 || frm.Docstatus == 2
+  })
+
+  watch(frm, (newFrm) => {
+    if(field.value){
+      value.value = field.value
+    }
+  })
+
   watch(value, (newValue) => {
     frm.setValue(field.fieldname, newValue)
   })
