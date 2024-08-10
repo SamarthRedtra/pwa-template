@@ -16,6 +16,7 @@ export default class Form extends EventEmitter {
     this.Submit = ref(0);
     this.Amend = ref(0);
     this.router = useRouter();
+    this.attachValues = reactive([]);
 
     this.doc = reactive({
       docstatus: 0, 
@@ -128,11 +129,9 @@ export default class Form extends EventEmitter {
       keysToRemove.forEach(key => {
         delete this.doc[key];
       });
-
-      console.log(this.doc.name);
+      
   
       if(this.doc.name){
-        console.log(this.doc.name);
         let currentName = this.doc.name;
         this.doc.amended_from = currentName;
     
@@ -149,6 +148,24 @@ export default class Form extends EventEmitter {
           this.updateFields();
           this.name = this.doc.name;
           this.Docstatus = 0;
+          if(this.fields.some(field => field.fieldtype === 'Attach')){
+            this.attachValues.forEach((item) => {
+              if (item.FeildName) { 
+                const updateFile = createListResource({
+                        doctype: 'File',
+                        filters: {
+                            name: item.name,
+                        }
+                    })
+                    updateFile.setValue.submit({
+                        name: item.name,
+                        "attached_to_doctype": this.doctype,
+                        "attached_to_name": response.name,
+                        "attached_to_field": item.FeildName
+                    })
+              }
+            });
+          }
           return response.name;
         })
         .catch(error => {

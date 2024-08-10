@@ -191,6 +191,7 @@
 import { defineProps, computed, ref, h, watch } from 'vue';
 import Text from './components/Text.vue';
 import Select from './components/Select.vue';
+import Attach from './components/Attach.vue';
 import Badge from './components/Badge.vue';
 import Int from './components/Int.vue';
 import DateTime from './components/DateTime.vue';
@@ -229,7 +230,8 @@ const fieldMap = {
   'Small Text': Textarea,
   Float: Float,
   Link: Link,
-  Currency: Currency
+  Currency: Currency,
+  Attach: Attach,
 };
 
 const loading = ref(false);
