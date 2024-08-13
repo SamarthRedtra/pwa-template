@@ -74,6 +74,14 @@ watch(displayValue, (newValue) => {
   const symbol = fetchedOptions.value.length > 0 ? fetchedOptions.value[0] : '';
   const valueWithSymbol = symbol + numericValue;
   frm.setValue(field.fieldname, valueWithSymbol);
+  if(field.value){
+    if (frm.doc[field.fieldname] != field.value) {
+      field.value = null;
+      frm.Saved = 0;
+      frm.Submit = 0;
+      frm.Amend = 0;
+    }
+  }
 });
 
 const validateInput = (event) => {

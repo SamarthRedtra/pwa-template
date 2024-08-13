@@ -26,11 +26,20 @@ const isDisabled = computed(() => {
 watch(value, (newValue) => {
   const intValue = parseInt(newValue, 10)
   frm.setValue(field.fieldname, isNaN(intValue) ? '' : intValue)
+  if(field.value){
+    if (frm.doc[field.fieldname] != field.value) {
+      field.value = null
+      frm.Saved = 0;
+      frm.Submit = 0;
+      frm.Amend = 0;
+    }
+  }
 })
 
 watch(frm, (newFrm) => {
   if (field.value) {
     value.value = field.value
   }
+  
 })
 </script>

@@ -31,6 +31,15 @@
 
   watch(value, (newValue) => {
     frm.setValue(field.fieldname, newValue)
+
+      if(field.value){
+        if (frm.doc[field.fieldname] != field.value) {
+          field.value = null
+          frm.Saved = 0;
+          frm.Submit = 0;
+          frm.Amend = 0;
+        }
+      }
   })
   </script>
   

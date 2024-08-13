@@ -131,7 +131,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { FeatherIcon, createListResource, Dialog, TextInput, Button, Autocomplete } from 'frappe-ui';
+import { FeatherIcon, createListResource, Dialog, TextInput, Button, Autocomplete, createResource } from 'frappe-ui';
 import User from "../form/components/User.vue";
 import { useRoute, useRouter } from 'vue-router';
 
@@ -141,43 +141,58 @@ const selectedNumber = ref(20);
 const route = useRoute();
 const dialog2 = ref(false);
 const id = ref('');
+const filter = ref([])
+
 
 watch(id, (newId) => {
+	if(newId){
+		filter.value = ["Customer", "name", "like", `%${newId}%`]
+	}
+	else {
+        filter.value = null
+    }
 	loadData()
 })
 
 const loadData = () => {
-	const filters = id.value ? { name: id.value } : {};
+    const filters = id.value ? { name: id.value } : {};
+	
 
-	const Doctype = createListResource({
-		doctype: route.query.doctype,
-		fields: ['*'],
-		orderBy: 'creation desc',
-		filters: filters,
-		start: 0,
-		pageLength: selectedNumber.value,   
-	});
+    const DocT = createResource({
+        url: 'frappe.desk.reportview.get',
+        method: 'POST',
+        params: {
+            doctype: route.query.doctype,
+            filters: filter.value.length != 0 ? [filter.value]: [],
+            fields: ["*"],
+            distinct: false,
+            start: 0,
+            page_length: selectedNumber.value,
+        },
+    });
 
-	Doctype.reload().then(() => {
-		const amended_from = ref(false);
+    DocT.fetch().then(() => {
+        const amended_from = ref(false);
+        reports.value = DocT.data.values.map((row) => {
+            const mappedItem = {};
+            DocT.data.keys.forEach((key, index) => {
+                mappedItem[key] = row[index];
+                if (key === 'amended_from' && row[index]) {
+                    amended_from.value = true;
+                }
+            });
 
-		Doctype.data.forEach(item => {
-			Object.entries(item).forEach(([key, value]) => {
-				if (key === 'amended_from') {
-					amended_from.value = true;
-				}
-			});
-		});
-
-		reports.value = Doctype.data.map(item => ({
-			name: item.name,
-			owner: item.owner,
-			creation: item.creation,
-			docstatus: item.docstatus,
-			amended_from_value: amended_from.value ? 1 : 0,
-		}));
-	});
+            return {
+                name: mappedItem.name,
+                owner: mappedItem.owner,
+                creation: mappedItem.creation,
+                docstatus: mappedItem.docstatus,
+                amended_from_value: amended_from.value ? 1 : 0,
+            };
+        });
+    });
 };
+
 
 loadData();
 
@@ -242,7 +257,7 @@ const filters = ref([
 			{ label: 'John', value: 'john-doe' },
 		],
 		selectedPerson: null,
-		selectedCondition: 'Equals', // Set default to "Equals"
+		selectedCondition: 'Equals',
 		value: '',
 	},
 ]);

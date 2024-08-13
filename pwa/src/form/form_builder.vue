@@ -245,14 +245,14 @@ const statusText = computed(() => {
 
 const statusClass = computed(() => {
   if (props.frm.Saved === 0) {
-    return 'bg-red-200 rounded-2xl text-center';
+    return 'bg-red-200 h-[2rem] rounded-2xl text-center';
   } else if (props.frm.Saved === 1) {
     if (props.frm.submitable === 1 && docStatus.value !== 1) {
-      return 'bg-red-200 rounded-2xl text-center';
+      return 'bg-red-200 h-[2rem] rounded-2xl text-center';
     } else if (docStatus.value === 1) {
-      return 'bg-green-200 rounded-2xl text-center';
+      return 'bg-green-200 h-[2rem] rounded-2xl text-center';
     } else {
-      return 'bg-green-200 rounded-2xl text-center';
+      return 'bg-green-200 h-[2rem] rounded-2xl text-center';
     }
   }
 });

@@ -40,6 +40,14 @@ watch(value, (newValue) => {
   if (!isNaN(floatValue)) {
     frm.setValue(field.fieldname, floatValue.toFixed(3))
   }
+  if(field.value){
+    if (frm.doc[field.fieldname] != field.value) {
+      field.value = null
+      frm.Saved = 0;
+      frm.Submit = 0;
+      frm.Amend = 0;
+    }
+  }
 })
 
 // Format value on blur

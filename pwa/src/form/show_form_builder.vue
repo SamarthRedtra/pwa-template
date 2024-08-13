@@ -2,12 +2,18 @@
   <div class="w-full sm:w-96 bg-white flex justify-center h-screen">
     <div class="w-full flex flex-col">
       <div class="w-full sm:w-96 bg-white h-16 shadow-lg fixed top-0 z-10">
-        <div class=" pr-2 flex pt-3">
+        <div class="pr-2 flex pt-3 items-center">
           <FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
-          <p class="font-semibold w-fit text-xl pt-[8px] pr-2">{{ frm.doctype }}</p>
+          
+          <div :class="{'flex-1 text-center': !docName}">
+            <p class="font-semibold w-fit text-xl pr-2">{{ frm.doctype }}</p>
+            <p v-if="docName" class="pt-1 b-2 text-xs font-light text-gray-600">{{ docName }}</p>
+          </div>
+          
           <div :class="statusClass">
             <p :class="statusTextClass">{{ statusText }}</p>
           </div>
+          
           <div class="w-full flex justify-end">
             <div class="p-1 pr-4">
               <FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
@@ -15,14 +21,14 @@
             <User />
           </div>
         </div>
-        <p class=" pl-[2.1rem] b-2 text-xs font-light text-gray-600">{{ docName }}</p>
       </div>
+      
 
       <div class="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-14 p-2 bg-gray-100">
         <div class=" bg-white rounded-lg">
           <component
             v-for="field in filteredFields"
-            :key="field.fieldname"
+            :key="field.fieldname"para should align perfectly 
             :is="fieldMap[field.fieldtype]"
             :field="field"
             :frm="frm"
@@ -95,7 +101,7 @@
         />
         <div class="pt-1 w-fit h-full">
           <Button
-            v-if="props.frm.Saved == 0"
+            v-if="props.frm.Saved == 0 || props.frm.submitable == 0"
             :variant="'solid'"
             theme="gray"
             size="sm"
@@ -121,7 +127,7 @@
             @click="handleCancel" 
           />
           <Button
-            v-else-if="props.frm.Docstatus == 2"
+            v-else-if="props.frm.Docstatus == 2 && props.frm.submitable == 1"
             :variant="'solid'"
             theme="gray"
             size="sm"
@@ -269,12 +275,10 @@ const handleSave = async () => {
   loading.value = true;
   submitable.value = props.frm.submitable;
   try {
-    const name = await props.frm.save(); 
-    docName.value = name;
-    saveResult.value = 'Save successful!';
+    await props.frm.update(); 
+    saveResult.value = 'Updated successful!';
     saveSuccess.value = true;
     formAfterSave.value = props.frm.doc;
-    console.log(formAfterSave.value);
   } catch (error) {
     saveResult.value = `Error: ${error.message}`;
     saveSuccess.value = false;
@@ -368,9 +372,13 @@ const filteredFields = computed(() => {
 
 
 const statusText = computed(() => {
-  if (props.frm.Saved === 0) {
+  if(props.frm.submitable == 0){
+    return '';
+  }
+  else if (props.frm.Saved === 0) {
     return 'Not Saved';
   } else if (props.frm.Saved === 1) {
+    console.log(props.frm.Submit)
     if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
       return 'Draft';
     } else if (props.frm.Docstatus === 2) {
@@ -384,23 +392,29 @@ const statusText = computed(() => {
 });
 
 const statusClass = computed(() => {
-  if (props.frm.Saved === 0) {
-    return 'bg-red-200 rounded-2xl text-center';
+  if(props.frm.submitable == 0){
+    return '';
+  }
+  else if (props.frm.Saved === 0) {
+    return 'bg-red-200 h-[2rem] rounded-2xl text-center';
   } else if (props.frm.Saved === 1) {
     if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
-      return 'bg-red-200 rounded-2xl text-center';
+      return 'bg-red-200 h-[2rem] rounded-2xl text-center';
     } else if (props.frm.Docstatus === 2) {
       return 'bg-red-200 rounded-2xl text-center';
     }else if (props.frm.Submit === 1) {
-      return 'bg-green-200 rounded-2xl text-center';
+      return 'bg-green-200 h-[2rem] rounded-2xl text-center';
     }  else {
-      return 'bg-green-200 rounded-2xl text-center';
+      return 'bg-green-200 h-[2rem] rounded-2xl text-center';
     }
   }
 });
 
 const statusTextClass = computed(() => {
-  if (props.frm.Saved === 0) {
+  if(props.frm.submitable == 0){
+    return '';
+  }
+  else if (props.frm.Saved === 0) {
     return 'p-2 text-sm w-20 text-red-500';
   } else if (props.frm.Saved === 1) {
     if (props.frm.submitable === 1 && props.frm.Submit !== 1) {

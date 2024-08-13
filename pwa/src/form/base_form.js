@@ -28,68 +28,50 @@ export default class Form extends EventEmitter {
     });
   }
   async initFields() {
-    const myHeaders = new Headers();
-    myHeaders.append('Authorization', 'token d0149bda3bda82c:aadbcbf2a847ea2');
-    myHeaders.append('Content-Type', 'application/json');
-    myHeaders.append('Cookie', 'full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=');
-  
-    const raw = JSON.stringify({
-      form: this.Frm,
-      doctype: this.doctype,
-    });
-  
-    const requestOptions = {
+    const doctype = createResource({
+      url: 'pwa_template.utils.get_form_meta',
       method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow',
-    };
-  
-    const currentURL = ref(window.location.href);
-    const baseURL = computed(() => {
-      const url = new URL(currentURL.value);
-      return `${url.protocol}//${url.hostname}`;
-    });
-  
-    const modifiedDocFetchURL = computed(() => `${baseURL.value}:8001/api/method/pwa_template.utils.get_form_meta`);
-  
-    try {
-      const response = await fetch(modifiedDocFetchURL.value, requestOptions);
-      const result = await response.json();
-      this.submitable = result.message.is_submittable;
-      this.fields = result.message.fields;
-      this.doc = {};
-    } catch (error) {
-      console.error('Error fetching form metadata: ', error);
-    }
-    
-    if (this.name != null) {
-      const docValues = createListResource(
-        {
-          doctype: this.doctype,
-          fields: ['*'],
-          filters: {
-            name: this.name
-          },
+      params: {
+        form: this.Frm,
+        doctype: this.doctype,
+      },
+    })
+    doctype.fetch()
+    .then(() => {
+        this.fields = doctype.data.fields;
+        this.submitable = doctype.data.is_submittable
+        this.doc = {};
+        if (this.name != null) {
+          const docValues = createListResource(
+            {
+              doctype: this.doctype,
+              fields: ['*'],
+              filters: {
+                name: this.name
+              },
+            }
+          )
+          docValues.reload()
+          .then(() => {
+            const fetchedData = docValues.data[0];
+            if(docValues.data[0].docstatus == 0){
+              this.Docstatus = docValues.data[0].docstatus;
+              this.Saved = 1
+            }
+            else if(docValues.data[0].docstatus == 1 || docValues.data[0].docstatus == 2){
+              this.Docstatus = docValues.data[0].docstatus;
+              this.Submit = 1;
+              this.Saved = 1;
+            }
+            Object.keys(fetchedData).forEach(key => {
+              this.doc[key] = fetchedData[key];
+            });
+            this.updateFields();
+          })
         }
-      )
-      await docValues.reload();
-  
-      const fetchedData = docValues.data[0];
-      if(docValues.data[0].docstatus == 0){
-        this.Docstatus = docValues.data[0].docstatus;
-        this.Saved = 1
       }
-      else if(docValues.data[0].docstatus == 1 || docValues.data[0].docstatus == 2){
-        this.Docstatus = docValues.data[0].docstatus;
-        this.Submit = 1;
-        this.Saved = 1;
-      }
-      Object.keys(fetchedData).forEach(key => {
-        this.doc[key] = fetchedData[key];
-      });
-      this.updateFields();
-    }
+    ) 
+    
   }
   
 
@@ -176,9 +158,23 @@ export default class Form extends EventEmitter {
       return Promise.reject(new Error('Validation failed'));
     }
   }
-  
-  
-  
+
+  update() {
+    const docCopy = { ...this.doc };
+    delete docCopy.modified_by;
+    delete docCopy.modified;
+
+    console.log(docCopy);
+    const update = createListResource({
+      doctype: this.doctype,
+      filters: {
+        name: this.name,
+      }
+    });
+    
+    update.setValue.submit(docCopy)
+      .then(() => this.Saved = 1);
+  }
   
   
   submit(name) {
