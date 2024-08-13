@@ -1,30 +1,29 @@
 <template>
   <div>
-    <Avatar :shape="'square'" :image="ImageUrl" :label="userName" size="xl"/>
+    <Dropdown
+      :options="dropdownOptions"
+      trigger="click"
+    >
+      <Avatar 
+        :shape="'square'" 
+        :image="ImageUrl" 
+        :label="userName" 
+        size="xl" 
+        class="cursor-pointer"
+      />
+    </Dropdown>
   </div>
 </template>
 
 <script setup>
-import { onMounted, watch, computed, ref } from 'vue'
-import { Avatar, createListResource } from 'frappe-ui'
+import { h, ref, computed } from 'vue';
+import { Avatar, Dropdown, FeatherIcon, createListResource } from 'frappe-ui';
 import { session } from '../../data/session';
 
-const userName = computed(() => session.user)
-const imageBaseUrl = ref('')
-
-onMounted(() => {
-  if (userName.value) {
-  //   console.log('User name:', userName.value)
-  }
-})
-
-watch(userName, (newValue) => {
-  if (newValue) {
-  //   console.log('User name:', newValue)
-  }
-})
-
+const userName = computed(() => session.user);
+const imageBaseUrl = ref('');
 const currentURL = ref(window.location.href);
+
 const baseURL = computed(() => {
   const url = new URL(currentURL.value);
   return `${url.protocol}//${url.hostname}`;
@@ -40,14 +39,34 @@ const userDetails = createListResource({
   filters: {
     name: userName.value
   }
-})
+});
 
 userDetails.reload()
   .then(() => {
     imageBaseUrl.value = userDetails.data[0].user_image || '';
-  })
+  });
+
+const dropdownOptions = [
+  {
+    group: 'User Actions',
+    items: [
+      {
+        label: 'About',
+        icon: () => h(FeatherIcon, { name: "alert-circle" }),
+        onClick: () => { /* Add your edit title logic here */ }
+      },
+      {
+        label: 'Logout',
+        icon: () => h(FeatherIcon, { name: "log-out" }),
+        onClick: () => { session.logout.submit()}
+      },
+    ],
+  },
+]
 </script>
 
 <style scoped>
-
+.cursor-pointer {
+  cursor: pointer;
+}
 </style>

@@ -3,7 +3,7 @@
 	<div class="w-full flex flex-col">
 	<div class="w-full sm:w-96 bg-white h-14 shadow-lg fixed top-0 z-10">
 		<div class="p-2 flex pt-3">
-		<FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" />
+		<FeatherIcon class="w-6 h-6 mt-1 text-gray-600 hover:text-black" name="list" />
 		<FormControl
 			:type="'search'"
 			size="sm"
@@ -77,7 +77,6 @@ const navigateToForm = (link) => {
   });
 };
 </script>
-  
 <style scoped>
 	.no-scrollbar::-webkit-scrollbar {
 		display: none;
@@ -90,4 +89,3 @@ const navigateToForm = (link) => {
 		cursor: pointer;
 	}
 </style>
-  

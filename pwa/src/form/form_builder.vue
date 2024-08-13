@@ -30,7 +30,7 @@
         </div>
       </div>
 
-      <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-white shadow-lg justify-center">
+      <div class="flex w-full sm:w-96 pb-1 pt-1 fixed bottom-0 z-10 bg-white shadow-lg justify-center">
         <div class="pt-1 w-fit">
           <Button
             v-if="props.frm.Saved == 0"
