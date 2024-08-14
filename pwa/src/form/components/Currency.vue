@@ -22,8 +22,6 @@ const value = ref('');
 const displayValue = ref("");  
 const fetchedOptions = ref([]); 
 
-console.log(field)
-
 const isDisabled = computed(() => {
   return field.read_only == 1 || frm.Docstatus == 1 || frm.Docstatus == 2;
 });
