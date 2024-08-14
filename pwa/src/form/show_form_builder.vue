@@ -213,6 +213,7 @@ import Currency from './components/Currency.vue';
 import { useRouter } from 'vue-router';
 import { FeatherIcon, Dropdown, Button, Dialog } from 'frappe-ui';
 
+
 const props = defineProps({
   frm: Object,
   docname: String,
@@ -378,7 +379,6 @@ const statusText = computed(() => {
   else if (props.frm.Saved === 0) {
     return 'Not Saved';
   } else if (props.frm.Saved === 1) {
-    console.log(props.frm.Submit)
     if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
       return 'Draft';
     } else if (props.frm.Docstatus === 2) {
@@ -403,9 +403,9 @@ const statusClass = computed(() => {
     } else if (props.frm.Docstatus === 2) {
       return 'bg-red-200 rounded-2xl text-center';
     }else if (props.frm.Submit === 1) {
-      return 'bg-green-200 h-[2rem] rounded-2xl text-center';
+      return 'bg-blue-200 h-[2rem] rounded-2xl text-center';
     }  else {
-      return 'bg-green-200 h-[2rem] rounded-2xl text-center';
+      return 'bg-blue-200 h-[2rem] rounded-2xl text-center';
     }
   }
 });
@@ -422,9 +422,9 @@ const statusTextClass = computed(() => {
     } else if (props.frm.Docstatus === 2) {
       return 'p-2 text-sm w-20 text-red-500';
     } else if (props.frm.Submit === 1) {
-      return 'p-2 text-sm w-20 text-green-500';
+      return 'p-2 text-sm w-20 text-blue-500';
     }  else {
-      return 'p-2 text-sm w-20 text-green-500';
+      return 'p-2 text-sm w-20 text-blue-500';
     }
   }
 });
@@ -448,6 +448,12 @@ const dropdownOptions = computed(() => {
     {
       label: "Create New " + props.frm.doctype,
       icon: () => h(FeatherIcon, { name: "file-plus" }),
+      onClick: () => { handelNew()}
+    },
+    {
+      label: "Reload",
+      icon: () => h(FeatherIcon, { name: "refresh-ccw" }),
+      onClick: () => { window.location.reload();}
     },
   ];
 
@@ -474,6 +480,9 @@ const goBack = () => {
   props.frm.name = null;
   props.frm.fields = [];
   props.frm.Docstatus = 0;
+  props.frm.Saved = 0;
+  props.frm.Submit = 0;
+  props.frm.Amend = 0;
   router.push({
     name: 'ListPage',
     query: {
@@ -482,6 +491,25 @@ const goBack = () => {
     }
   });
 };
+
+const handelNew = () => {
+  props.frm.doc = {
+    docstatus: 0, 
+  };
+  props.frm.name = null;
+  props.frm.fields = [];
+  props.frm.Docstatus = 0;
+  props.frm.Saved = 0;
+  props.frm.Submit = 0;
+  props.frm.Amend = 0;
+	router.push({
+		name: 'Form',
+		query: {
+			frmname: props.frm.Frm,
+			doctype: props.frm.doctype,
+		}
+	});
+}
 </script>
 
 <style scoped>

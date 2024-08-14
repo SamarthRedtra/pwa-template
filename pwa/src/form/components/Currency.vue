@@ -18,9 +18,11 @@ import { defineProps, watch, ref, computed, onMounted } from 'vue';
 
 const { field, frm } = defineProps(['field', 'frm']);
 
-const value = ref("");  
+const value = ref('');  
 const displayValue = ref("");  
 const fetchedOptions = ref([]); 
+
+console.log(field)
 
 const isDisabled = computed(() => {
   return field.read_only == 1 || frm.Docstatus == 1 || frm.Docstatus == 2;
@@ -57,12 +59,13 @@ const fetchOptions = async () => {
 watch(frm, (newFrm) => {
   if (field.value) {
     if(field.value == null){
-      value.value = 0
+      displayValue.value = null;
+      value.value = 0;
     }
     else{
+      displayValue.value = field.value;
       value.value = field.value;
     }
-    // Update displayValue to include the symbol
     const symbol = fetchedOptions.value.length > 0 ? fetchedOptions.value[0] : '';
     displayValue.value = `${symbol}${value.value}`;
   }

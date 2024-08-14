@@ -52,8 +52,8 @@
 										</div>
 									</div>
 									<div v-if="report.amended_from_value" class="ml-auto">
-										<div v-if="report.docstatus === 0" class="p-1 pl-2 pr-2 bg-red-300 rounded-xl">
-											<p class="text-[12px] text-red-700">Draft</p>
+										<div v-if="report.docstatus === 0" class="p-1 pl-2 pr-2 w-[4.5rem] flex justify-center bg-red-300 rounded-xl">
+											<p class="text-[12px]  text-red-700">Draft</p>
 										</div>
 										<div v-else-if="report.docstatus === 1" class="p-1 pl-2 pr-2 bg-blue-300 rounded-xl">
 											<p class="text-[12px] text-blue-700">Submitted</p>
@@ -173,6 +173,7 @@ watch(id, (newId) => {
 const loadData = () => {
 	const constructedFilters = filter.value.length !== 0 ? filter.value : [];
 	numberOfFilters.value = filter.value.length;
+
 	DocT.value = createResource({
 		url: 'frappe.desk.reportview.get',
 		method: 'POST',
@@ -192,29 +193,35 @@ const loadData = () => {
 			return;
 		}
 
-		const amended_from = ref(false);
-		reports.value = DocT.value.data.values.map((row) => {
-			const mappedItem = {};
-			DocT.value.data.keys.forEach((key, index) => {
-				mappedItem[key] = row[index];
-				if (key === 'amended_from' && row[index]) {
-					amended_from.value = true;
-				}
-			});
+		// Fetch the `is_submittable` value
+		const submitable = createListResource({
+			doctype: 'PWA Form',
+			fields: ['is_submittable'],
+			filters: {
+				doctype_name: route.query.doctype
+			}
+		});
 
-			return {
-				name: mappedItem.name,
-				owner: mappedItem.owner,
-				creation: mappedItem.creation,
-				docstatus: mappedItem.docstatus,
-				amended_from_value: amended_from.value ? 1 : 0,
-			};
+		submitable.reload().then(() => {
+			const isSubmittable = submitable.data[0].is_submittable;
+
+			reports.value = DocT.value.data.values.map((row) => {
+				const mappedItem = {};
+				DocT.value.data.keys.forEach((key, index) => {
+					mappedItem[key] = row[index];
+				});
+
+				return {
+					name: mappedItem.name,
+					owner: mappedItem.owner,
+					creation: mappedItem.creation,
+					docstatus: mappedItem.docstatus,
+					amended_from_value: isSubmittable ? 1 : 0,
+				};
+			});
 		});
 	});
 };
-
-
-
 
 loadData();
 

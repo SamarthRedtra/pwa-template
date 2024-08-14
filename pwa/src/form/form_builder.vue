@@ -309,6 +309,15 @@ const dropdownOptions = computed(() => {
 const router = useRouter();
 
 const goBack = () => {
+  props.frm.doc = {
+    docstatus: 0, 
+  };
+  props.frm.name = null;
+  props.frm.fields = [];
+  props.frm.Docstatus = 0;
+  props.frm.Saved = 0;
+  props.frm.Submit = 0;
+  props.frm.Amend = 0;
   router.push({
     name: 'ListPage',
     query: {
