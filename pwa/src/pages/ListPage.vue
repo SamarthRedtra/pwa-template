@@ -34,53 +34,8 @@
 					  </div>
 					  
 					<FeatherIcon name="refresh-ccw" class="w-5 h-5 text-gray-600 ml-[1rem] mr-2 hover:text-black hover:cursor-pointer" @click="refreshData"/>
-				</div>                
-				<div class="bg-white h-[32rem] w-full rounded-lg mt-2 p-2">
-					<div class="h-[28rem] overflow-y-auto no-scrollbar">
-						<div v-if="reports.length === 0" class="flex justify-center items-center h-full">
-							<p class="text-gray-600 text-lg">No Report Found</p>
-						</div>
-						<div v-else>
-							<div v-for="report in reports" :key="report.id" class="border-gray-200 border-b-[1.5px]">
-								<div class="p-2 flex pt-2 items-center">
-									<FeatherIcon name="file-text" class="text-gray-600 h-5 w-5" />
-									<div class="flex flex-col pl-3">
-										<p class="text-black truncate w-[8rem]">{{ report.name }}</p>
-										<div class="flex space-x-2">
-											<p class="text-gray-600 text-[10px] truncate w-[4rem]">{{ report.owner }}</p>
-											<p class="text-gray-600 text-[10px] truncate w-[4rem]">{{ report.creation }}</p>
-										</div>
-									</div>
-									<div v-if="report.amended_from_value" class="ml-auto">
-										<div v-if="report.docstatus === 0" class="p-1 pl-2 pr-2 w-[4.5rem] flex justify-center bg-red-300 rounded-xl">
-											<p class="text-[12px]  text-red-700">Draft</p>
-										</div>
-										<div v-else-if="report.docstatus === 1" class="p-1 pl-2 pr-2 bg-blue-300 rounded-xl">
-											<p class="text-[12px] text-blue-700">Submitted</p>
-										</div>
-										<div v-else-if="report.docstatus === 2" class="p-1 pl-2 pr-2 bg-red-300 rounded-xl">
-											<p class="text-[12px] text-red-700">Cancelled</p>
-										</div>
-									</div>
-									<div :class="!report.amended_from_value ? 'touchable ml-auto' : 'touchable ml-[20px]'" @click="handleClick(report)">
-										<FeatherIcon name="arrow-right" class="text-gray-600 h-5 w-5 hover:text-black" />
-									</div>                                
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="border-gray-200 border-[1.5px] p-1 mb-2 mt-2 flex rounded-xl w-fit">
-						<div class="border-r-[1.5px] border-gray-200 touchable" data-number="20" @click="printNumber(20)">
-							<p class="text-[14px] pr-2 pl-2">20</p>
-						</div>
-						<div class="border-r-[1.5px] border-gray-200 touchable" data-number="100" @click="printNumber(100)">
-							<p class="text-[14px] pr-2 pl-2">100</p>
-						</div>
-						<div class="touchable" data-number="500" @click="printNumber(500)">
-							<p class="text-[14px] pr-2 pl-2">500</p>
-						</div>
-					</div>                    
 				</div>
+				<List :reports="reports.value" @handle-click="handleClick" @print-number="printNumber"/>                
 			</div>
 			<div class="flex w-full sm:w-96 pb-5 pt-2 fixed bottom-0 z-10 bg-white justify-center shadow-lg">
 				<div class="pt-1 w-fit h-full">
@@ -143,13 +98,13 @@
 	</div>
 </template>
 <script setup>
-import { ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { FeatherIcon, createListResource, Dialog, TextInput, Button, Autocomplete, createResource } from 'frappe-ui';
 import User from "../form/components/User.vue";
 import { useRoute, useRouter } from 'vue-router';
 import List from '../form/components/List.vue';
 
-const reports = ref([]);
+const reports = reactive([]);
 const router = useRouter();
 const selectedNumber = ref(20);
 const route = useRoute();
@@ -193,7 +148,6 @@ const loadData = () => {
 			return;
 		}
 
-		// Fetch the `is_submittable` value
 		const submitable = createListResource({
 			doctype: 'PWA Form',
 			fields: ['is_submittable'],
