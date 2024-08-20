@@ -1,6 +1,7 @@
 <template>
     <div>
       <div class="p-2" v-if="!fileUploaded">
+        <p class=" text-[12px] text-gray-600 mb-1">{{field.label}}</p>
         <FileUploader
           :fileTypes="['image/*', 'application/pdf']"
           :validateFile="(fileObject) => {}"
@@ -18,6 +19,7 @@
       </div>
   
       <div v-if="fileUploaded" class="p-2">
+        <p class=" text-[12px] text-gray-600 mb-1">{{field.label}}</p>
         <div class="w-full h-[2rem] border-[1.5px] border-gray-200 rounded-lg">
           <div class="flex hover:cursor-pointer" @click="openDialog">
             <div class="flex">

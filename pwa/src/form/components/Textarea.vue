@@ -6,6 +6,7 @@
         variant="subtle"
         :placeholder="field.label"
         :disabled="field.read_only"
+        :label="field.label"
         v-model="value"
       />
     </div>

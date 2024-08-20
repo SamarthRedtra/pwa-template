@@ -1,5 +1,6 @@
 <template>
   <div class="p-2">
+    <p class=" text-[12px] text-gray-600">{{field.label}}</p>
     <Autocomplete
       :options="field.options"
       v-model="field.value"
@@ -8,6 +9,7 @@
       :label="field.label"
       :placeholder="field.label"
       :disabled="isDisabled"
+      class=" mt-1"
     />
   </div>
 </template>

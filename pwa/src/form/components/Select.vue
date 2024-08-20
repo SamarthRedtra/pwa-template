@@ -1,6 +1,8 @@
 <template>
   <div class="p-2">
+    <p class=" text-[12px] text-gray-600">{{field.label}}</p>
     <Autocomplete
+      class=" mt-1"
       :options="field.options"
       v-model="field.value"
       size="sm"

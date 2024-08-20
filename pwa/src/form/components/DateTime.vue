@@ -1,6 +1,6 @@
 <template>
   <div class="p-2">
-    <TextInput
+    <FormControl
       v-model="value"
       :type="'datetime-local'"
       size="sm"
@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { TextInput } from 'frappe-ui'
+import { FormControl } from 'frappe-ui'
 import { defineProps, ref, computed, watch, onMounted } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])

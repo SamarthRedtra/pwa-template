@@ -1,6 +1,7 @@
 <template>
   <div class="p-2">
-    <div class="relative w-full">
+    <p class=" text-[12px] text-gray-600">{{field.label}}</p>
+    <div class="relative w-full mt-1">
       <FormControl
         :type="'text'"
         size="sm"

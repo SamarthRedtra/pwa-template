@@ -1,6 +1,6 @@
 <template>
   <div class="p-2">
-    <TextInput
+    <FormControl
       :type="'text'"
       size="sm"
       variant="subtle"
@@ -8,12 +8,13 @@
       :disabled="isDisabled"
       v-model="displayValue"
       @input="validateInput"
+      :label="field.label"
     />
   </div>
 </template>
 
 <script setup>
-import { TextInput, createListResource } from 'frappe-ui';
+import { FormControl, createListResource } from 'frappe-ui';
 import { defineProps, watch, ref, computed, onMounted } from 'vue';
 
 const { field, frm } = defineProps(['field', 'frm']);

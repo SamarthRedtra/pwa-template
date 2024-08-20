@@ -1,5 +1,6 @@
 <template>
   <div class="p-2">
+    <p class=" text-[12px] text-gray-600">{{field.label}}</p>
     <TextInput
       :type="'number'"
       size="sm"
@@ -7,6 +8,7 @@
       :placeholder="field.label"
       :disabled="isDisabled"
       v-model="value"
+      class=" mt-1"
     />
   </div>
 </template>
