@@ -8,8 +8,8 @@
         </div>
       </div>
       <div v-else>
-        <div v-if="props.reports.length === 0" class="flex justify-center items-center h-full">
-          <p class="text-gray-600 text-lg">No Report Found</p>
+        <div v-if="props.reports.length === 0" class="flex justify-center items-center h-full text-center">
+          <p class="text-gray-600 text-sm mt-[14rem]">No Report Found</p>
         </div>
         <div v-else>
           <div v-for="report in props.reports" :key="report.id" class="border-gray-200 border-b-[1.5px]">

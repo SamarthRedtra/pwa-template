@@ -1,6 +1,7 @@
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, watch } from 'vue';
 import EventEmitter from './eventemiitor';
 import { useRouter } from 'vue-router';
+import { session } from '../data/session';
 import { createListResource, createResource, createDocumentResource } from 'frappe-ui';
 
 export default class Form extends EventEmitter {
@@ -15,9 +16,16 @@ export default class Form extends EventEmitter {
     this.Saved = ref(0);
     this.Submit = ref(0);
     this.Amend = ref(0);
+    this.workflowStatus = ref(false)
+    this.workflow_state =ref('')
+    this.roles = [];
+    this.style = ref('')
+    this.status = ref([])
     this.router = useRouter();
+    this.transition = ref([]) 
+    this.username = computed(() => session.user);
     this.attachValues = reactive([]);
-
+    this.action = ref('')
     this.doc = reactive({
       docstatus: 0, 
     });
@@ -28,6 +36,55 @@ export default class Form extends EventEmitter {
     });
   }
   async initFields() {
+    const isworkflow = createListResource({
+      doctype: "Workflow",
+      fields: ['*'],
+      filters: {
+        document_type: this.doctype
+      },
+    })
+
+    isworkflow.reload()
+    .then(() => {
+      isworkflow.data.forEach(data => {
+        if(data.is_active){
+          this.workflowStatus = true
+          const workflowValues = createResource({
+            url: `frappe.desk.form.load.getdoc`, 
+            method: 'GET', 
+            params: {
+                doctype: 'Workflow', 
+                name: data.name, 
+                _: Date.now()
+              },
+            })
+          workflowValues.fetch()
+          .then(() => {
+            this.status = workflowValues.data.docs[0].states
+            this.transition = workflowValues.data.docs[0].transitions
+          })
+          
+        }
+      })
+    })
+
+    const userDetails = createResource({
+      url: `frappe.desk.form.load.getdoc`, 
+      method: 'GET', 
+      params: {
+        doctype: 'User', 
+        name: this.username, 
+        _: Date.now()
+      },
+    });
+
+    userDetails.fetch()
+    .then(() => {
+      userDetails.data.docs[0].roles.forEach( datas => {
+        this.roles.push(datas.roles);
+      })
+    });
+
     const doctype = createResource({
       url: 'pwa_template.utils.get_form_meta',
       method: 'POST',
@@ -63,6 +120,12 @@ export default class Form extends EventEmitter {
               this.Submit = 1;
               this.Saved = 1;
             }
+
+            if(this.workflowStatus){
+              this.workflow_state = docValues.data[0].workflow_state
+              this.styles()
+              
+            }
             Object.keys(fetchedData).forEach(key => {
               this.doc[key] = fetchedData[key];
             });
@@ -71,7 +134,69 @@ export default class Form extends EventEmitter {
         }
       }
     ) 
-    
+  }
+
+  workflow() {
+    this.doc["doctype"] = this.doctype
+    const workflow = createResource({
+      url: `frappe.model.workflow.apply_workflow`, 
+      method: 'POST', 
+      params: {
+        doc: this.doc, 
+        action: this.action,
+      },
+    })
+
+    workflow.fetch()
+    .then(() => {
+      Object.entries(workflow.data).forEach(([key, value]) => {
+        this.doc[key] = value;
+      });
+      this.actions(workflow.data)
+    })
+  }
+
+
+  actions(datas) {
+    this.doc["doctype"] = this.doctype
+    const workflowTransition = createResource({
+      url: `frappe.model.workflow.get_transitions`, 
+      method: 'POST', 
+      params: {
+        doc: datas
+      },
+    })
+    workflowTransition.fetch()
+    .then(() => {
+      if(workflowTransition.data.length > 0){
+        // console.log(workflowTransition.data[0].state, workflowTransition.data[0].action);
+        this.workflow_state = workflowTransition.data[0].state
+        this.action = workflowTransition.data[0].action
+        this.styles()
+        return true
+      }
+      else{
+        this.workflow_state = this.doc.workflow_state
+        this.action = ''
+        this.styles()
+        return true
+      }
+    })
+  }
+
+
+  styles() {
+    const Style = createListResource({
+      doctype: "Workflow State",
+        fields: ['style'],
+        filters: {
+          name: this.workflow_state
+        },
+    })
+    Style.reload()
+    .then(() => {
+      this.style = Style.data[0].style
+    })
   }
   
 
@@ -81,6 +206,7 @@ export default class Form extends EventEmitter {
       if (this.doc.hasOwnProperty(field.fieldname)) {
         field.value = this.doc[field.fieldname];
       }
+      this.actions(this.doc)
     });
   }
   
