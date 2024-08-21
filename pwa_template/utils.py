@@ -15,7 +15,8 @@ def get_form_meta(form, doctype):
 				"default" : field.default,
 				"read_only" : field.read_only,
 				"description" : field.description,
-				"options" : field.options
+				"options" : field.options,
+				"value" : None,
 			}
 			if field.fieldtype == "Select":
 				row['options'] = [{'label': option, 'value': option} for option in field.options.split('\n')]
