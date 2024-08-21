@@ -169,7 +169,6 @@ export default class Form extends EventEmitter {
     workflowTransition.fetch()
     .then(() => {
       if(workflowTransition.data.length > 0){
-        // console.log(workflowTransition.data[0].state, workflowTransition.data[0].action);
         this.workflow_state = workflowTransition.data[0].state
         this.action = workflowTransition.data[0].action
         this.styles()
@@ -218,6 +217,25 @@ export default class Form extends EventEmitter {
     this.dirty = true;
     this.doc[fieldname] = value;
   }
+
+  setTableValue(fieldname, value, table, index) { 
+      if (!this.doc[table]) {
+          this.doc[table] = [];
+      }
+      if (!this.doc[table][index]) {
+          this.doc[table][index] = {};
+      }
+      this.doc[table][index][fieldname] = value;
+  }
+
+  removeTableVale(table, index) {
+    if (Array.isArray(this.doc[table])) {
+        this.doc[table].splice(index, 1);
+    }
+}
+
+
+  
 
   isNew() {
     return !!this.name;
