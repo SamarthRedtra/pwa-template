@@ -6,7 +6,7 @@
                 <FeatherIcon name="plus" class="w-5 h-5 text-gray-700 hover:cursor-pointer" />
             </Button>
         </div>
-        <div v-if="records.length > 0" class="h-[9.2rem] overflow-y-auto custom-scrollbar border-[1.5px] border-gray-300 rounded-md">
+        <div v-if="records.length > 0" class="max-h-[9.2rem] h-fit overflow-y-auto custom-scrollbar border-[1.5px] border-gray-300 rounded-md">
             <div v-for="(record, index) in records" :key="index" class="w-full rounded-md">
                 <div v-if="record.fieldtype !== 'Section Break'" class="border-b-[0.5px] border-gray-300 w-full h-[3rem] p-2 flex content-center items-center">
                     <FeatherIcon name="file-text" class="w-5 h-5 text-gray-600" />
@@ -50,7 +50,7 @@
                             :is="fieldMap[field.fieldtype]"
                             :field="field"
                             :frm="frm"
-                            :table="props.field.label"
+                            :table="props.field.fieldname"
                             :idexValue="indexValueSlected"
                             :idx="idx"
                         ></component>
@@ -74,7 +74,7 @@
     </div>
 </template>
 <script setup>
-import { defineProps, ref } from 'vue'
+import { defineProps, ref, watch } from 'vue'
 import { FeatherIcon, Button } from 'frappe-ui'
 import Text from './Text.vue'
 import SectionBreak from './SectionBreak.vue'
@@ -91,6 +91,7 @@ import Link from './Link.vue'
 import Attach from './Attach.vue'
 import Textarea from './Textarea.vue'
 
+
 const props = defineProps(['field', 'frm'])
 const records = ref([])
 const showPage = ref(false)
@@ -98,11 +99,33 @@ const indexValueSlected = ref(-1)
 const idx = ref(0)
 let startY = ref(0)
 let endY = ref(0)
+const retrivedValue = ref(true)
+
+watch(props.field, (newField) => {
+    if(newField.value.length > 0 && retrivedValue.value == true){
+        newField.value.forEach(value => {
+            records.value.push({
+                ...value,   
+                index: idx.value,
+                fieldtype: 'Text'
+            });
+            idx.value += 1
+        })
+        retrivedValue.value = false
+    }
+});
+
+
+// watch(props.frm.doc, (newdoc) => {
+//     console.log(newdoc)
+// })
+
+
 
 const Add = () => {
     let doc = props.frm.doc;
-    if (doc[props.field.label]) {
-        let table = doc[props.field.label];
+    if (doc[props.field.fieldname]) {
+        let table = doc[props.field.fieldname];
         records.value.push({
             ...table[idx.value],
             index: idx.value,
@@ -111,16 +134,23 @@ const Add = () => {
     }
     idx.value += 1;
     showPage.value = false;
-
-    console.log(records.value)
+    // console.log(props.field.value)
 };
 
-
 const close = () => {
+    if (records.value.length <= 0) {
+        props.frm.doc[props.field.fieldname] = [];
+    } else {
+        let index = indexValueSlected.value > -1 ? indexValueSlected.value : idx.value;
+        props.frm.doc[props.field.fieldname][index] = records.value[index];
+        // delete props.frm.doc[props.field.label][index]['index']
+        // delete props.frm.doc[props.field.label][index]['fieldtype']
+    }
+    
     showPage.value = false;
-    indexValueSlected.value = -1
+    indexValueSlected.value = -1;
+};
 
-}
 
 
 const newChild = () => {
@@ -130,6 +160,7 @@ const newChild = () => {
 const showIndex = (index) => {
     indexValueSlected.value = index;
     showPage.value = true
+    console.log(records.value)
 };
 
 const update = () => {
@@ -154,10 +185,25 @@ const update = () => {
 
 
 const Delete = () => {
-    props.frm.removeTableVale(props.field.label, idx);
+    let index = 0;
+    if (indexValueSlected.value > -1){
+        index = indexValueSlected.value
+    }
+    else{
+        index = idx.value;
+    }
+    props.frm.removeTableVale(props.field.fieldname, index);
     records.value = records.value.filter(record => record.index !== indexValueSlected.value);
+    records.value.forEach(record => {
+        if (record.index > index){
+            record.index--
+        }
+    })
     showPage.value = false;
     indexValueSlected.value = -1
+    if(idx.value > 0){
+        idx.value--
+    }
 };
 
 
@@ -211,56 +257,14 @@ const fieldMap = {
 
 const filteredFields = ref([
     {
-        "fieldname": "basic_info",
+        "fieldname": "section_break_dis6",
         "fieldtype": "Section Break",
-        "label": "Name and Type",
-        "options": "fa fa-user"
+        "label": "Name",
     },
     {
-        "bold": 1,
         "fieldname": "customer_name",
         "fieldtype": "Data",
-        "in_global_search": 1,
-        "label": "Full Name",
-        "reqd": 1,
-        "search_index": 1
-    },
-    {
-        "bold": 1,
-        "fieldname": "customer_Full_name",
-        "fieldtype": "Data",
-        "in_global_search": 1,
-        "label": "Cus Full Name",
-        "reqd": 1,
-        "search_index": 1
-    },
-    {
-        "fieldname": "date",
-        "fieldtype": "Date",
-        "label": "Date"
-    },
-    {
-        "fieldname": "datetime",
-        "fieldtype": "Datetime",
-        "label": "Datetime"
-    },
-    {
-        "collapsible": 1,
-        "collapsible_depends_on": "sales_team",
-        "fieldname": "sales_team_section",
-        "fieldtype": "Section Break",
-        "label": "Sales Team"
-    },
-    {
-        "default": "0",
-        "fieldname": "credit_limits",
-        "fieldtype": "Int",
-        "label": "Credit Limit"
-    },
-    {
-        "fieldname": "country",
-        "fieldtype": "Autocomplete",
-        "label": "Country"
+        "label": "Customer Name",
     },
     
 ])

@@ -249,6 +249,7 @@ import Float from './components/Float.vue';
 import Link from './components/Link.vue';
 import User from './components/User.vue';
 import Currency from './components/Currency.vue';
+import Childtable from './components/Childtable.vue';
 import { useRouter } from 'vue-router';
 import { FeatherIcon, Dropdown, Button, Dialog } from 'frappe-ui';
 
@@ -278,6 +279,8 @@ const fieldMap = {
 	Link: Link,
 	Currency: Currency,
 	Attach: Attach,
+	Table: Childtable
+	
 };
 
 const loading = ref(false);
