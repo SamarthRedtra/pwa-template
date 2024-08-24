@@ -1,5 +1,6 @@
 <template>
   <div class="p-2">
+    <p class=" text-[12px] text-gray-600">{{field.label}}</p>
     <Autocomplete
       :options="field.options"
       v-model="field.value"
@@ -8,6 +9,7 @@
       :label="field.label"
       :placeholder="field.label"
       :disabled="isDisabled"
+      class=" mt-1"
     />
   </div>
 </template>
@@ -23,6 +25,16 @@ const isDisabled = computed(() => {
 })
 
 watch(() => field.value, (newValue) => {
-  frm.setValue(field.fieldname, newValue.value)
+  const finalValue = newValue?.value ?? newValue;
+  field.value = finalValue
+  frm.setValue(field.fieldname, finalValue);
+  if(field.value){
+    if (frm.doc[field.fieldname] != field.value) {
+      field.value = null;
+      frm.Saved = 0;
+      frm.Submit = 0;
+      frm.Amend = 0;
+    }
+  }
 })
 </script>

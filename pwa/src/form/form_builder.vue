@@ -30,8 +30,8 @@
         </div>
       </div>
 
-      <div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-white shadow-lg justify-center">
-        <div class="pt-1 w-fit">
+      <div class="flex w-full sm:w-96 pb-1 pt-1 fixed bottom-0 z-10 bg-white shadow-lg justify-center">
+        <div class="pt-1 w-[20rem] sm:w-[20rem] ml-3">
           <Button
             v-if="props.frm.Saved == 0"
             :variant="'solid'"
@@ -42,7 +42,7 @@
             :loadingText="'Saving...'"
             :disabled="false"
             :link="null"
-            class="w-[18rem] h-full p-2"
+            class="w-full h-full p-2 "
             @click="handleSave"
           />
           <Button
@@ -55,7 +55,7 @@
             :loadingText="'Cancelling...'"
             :disabled="false"
             :link="null"
-            class="w-[18rem] h-[2.30rem] p-2"
+            class="w-full h-full p-2 "
             @click="handleCancel"
           />
           <Button
@@ -68,7 +68,7 @@
             :loadingText="'Submitting...'"
             :disabled="false"
             :link="null"
-            class="w-[18rem] h-[2.30rem] p-2"
+            class="w-full h-full p-2 "
             @click="handleSubmit"
           />
           <div v-if="saveResult" 
@@ -245,14 +245,14 @@ const statusText = computed(() => {
 
 const statusClass = computed(() => {
   if (props.frm.Saved === 0) {
-    return 'bg-red-200 rounded-2xl text-center';
+    return 'bg-red-200 h-[2rem] rounded-2xl text-center';
   } else if (props.frm.Saved === 1) {
     if (props.frm.submitable === 1 && docStatus.value !== 1) {
-      return 'bg-red-200 rounded-2xl text-center';
+      return 'bg-red-200 h-[2rem] rounded-2xl text-center';
     } else if (docStatus.value === 1) {
-      return 'bg-green-200 rounded-2xl text-center';
+      return 'bg-green-200 h-[2rem] rounded-2xl text-center';
     } else {
-      return 'bg-green-200 rounded-2xl text-center';
+      return 'bg-green-200 h-[2rem] rounded-2xl text-center';
     }
   }
 });
@@ -309,6 +309,15 @@ const dropdownOptions = computed(() => {
 const router = useRouter();
 
 const goBack = () => {
+  props.frm.doc = {
+    docstatus: 0, 
+  };
+  props.frm.name = null;
+  props.frm.fields = [];
+  props.frm.Docstatus = 0;
+  props.frm.Saved = 0;
+  props.frm.Submit = 0;
+  props.frm.Amend = 0;
   router.push({
     name: 'ListPage',
     query: {

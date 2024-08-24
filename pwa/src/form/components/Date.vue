@@ -1,6 +1,6 @@
 <template>
   <div class="p-2">
-    <TextInput
+    <FormControl
       v-model="value"
       :type="'date'"
       size="sm"
@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { TextInput } from 'frappe-ui'
+import { FormControl } from 'frappe-ui'
 import { defineProps, ref, computed, watch } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])
@@ -26,5 +26,13 @@ const isDisabled = computed(() => {
 
 watch(value, (newValue) => {
   frm.setValue(field.fieldname, newValue)
+  if(field.value){
+    if (frm.doc[field.fieldname] != field.value) {
+      field.value = null;
+      frm.Saved = 0;
+      frm.Submit = 0;
+      frm.Amend = 0;
+    }
+  }
 })
 </script>

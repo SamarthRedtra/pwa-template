@@ -1,6 +1,6 @@
 <template>
   <div class="p-2">
-    <TextInput
+    <FormControl
       :type="'text'"
       size="sm"
       variant="subtle"
@@ -8,17 +8,18 @@
       :disabled="isDisabled"
       v-model="displayValue"
       @input="validateInput"
+      :label="field.label"
     />
   </div>
 </template>
 
 <script setup>
-import { TextInput, createListResource } from 'frappe-ui';
+import { FormControl, createListResource } from 'frappe-ui';
 import { defineProps, watch, ref, computed, onMounted } from 'vue';
 
 const { field, frm } = defineProps(['field', 'frm']);
 
-const value = ref("");  
+const value = ref('');  
 const displayValue = ref("");  
 const fetchedOptions = ref([]); 
 
@@ -57,12 +58,13 @@ const fetchOptions = async () => {
 watch(frm, (newFrm) => {
   if (field.value) {
     if(field.value == null){
-      value.value = 0
+      displayValue.value = null;
+      value.value = 0;
     }
     else{
+      displayValue.value = field.value;
       value.value = field.value;
     }
-    // Update displayValue to include the symbol
     const symbol = fetchedOptions.value.length > 0 ? fetchedOptions.value[0] : '';
     displayValue.value = `${symbol}${value.value}`;
   }
@@ -74,6 +76,14 @@ watch(displayValue, (newValue) => {
   const symbol = fetchedOptions.value.length > 0 ? fetchedOptions.value[0] : '';
   const valueWithSymbol = symbol + numericValue;
   frm.setValue(field.fieldname, valueWithSymbol);
+  if(field.value){
+    if (frm.doc[field.fieldname] != field.value) {
+      field.value = null;
+      frm.Saved = 0;
+      frm.Submit = 0;
+      frm.Amend = 0;
+    }
+  }
 });
 
 const validateInput = (event) => {

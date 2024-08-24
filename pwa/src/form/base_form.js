@@ -1,6 +1,7 @@
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, watch } from 'vue';
 import EventEmitter from './eventemiitor';
 import { useRouter } from 'vue-router';
+import { session } from '../data/session';
 import { createListResource, createResource, createDocumentResource } from 'frappe-ui';
 
 export default class Form extends EventEmitter {
@@ -15,8 +16,16 @@ export default class Form extends EventEmitter {
     this.Saved = ref(0);
     this.Submit = ref(0);
     this.Amend = ref(0);
+    this.workflowStatus = ref(false)
+    this.workflow_state =ref('')
+    this.roles = [];
+    this.style = ref('')
+    this.status = ref([])
     this.router = useRouter();
-
+    this.transition = ref([]) 
+    this.username = computed(() => session.user);
+    this.attachValues = reactive([]);
+    this.action = ref('')
     this.doc = reactive({
       docstatus: 0, 
     });
@@ -27,68 +36,167 @@ export default class Form extends EventEmitter {
     });
   }
   async initFields() {
-    const myHeaders = new Headers();
-    myHeaders.append('Authorization', 'token d0149bda3bda82c:aadbcbf2a847ea2');
-    myHeaders.append('Content-Type', 'application/json');
-    myHeaders.append('Cookie', 'full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=');
-  
-    const raw = JSON.stringify({
-      form: this.Frm,
-      doctype: this.doctype,
-    });
-  
-    const requestOptions = {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow',
-    };
-  
-    const currentURL = ref(window.location.href);
-    const baseURL = computed(() => {
-      const url = new URL(currentURL.value);
-      return `${url.protocol}//${url.hostname}`;
-    });
-  
-    const modifiedDocFetchURL = computed(() => `${baseURL.value}:8001/api/method/pwa_template.utils.get_form_meta`);
-  
-    try {
-      const response = await fetch(modifiedDocFetchURL.value, requestOptions);
-      const result = await response.json();
-      this.submitable = result.message.is_submittable;
-      this.fields = result.message.fields;
-      this.doc = {};
-    } catch (error) {
-      console.error('Error fetching form metadata: ', error);
-    }
-    
-    if (this.name != null) {
-      const docValues = createListResource(
-        {
-          doctype: this.doctype,
-          fields: ['*'],
-          filters: {
-            name: this.name
-          },
+    const isworkflow = createListResource({
+      doctype: "Workflow",
+      fields: ['*'],
+      filters: {
+        document_type: this.doctype
+      },
+    })
+
+    isworkflow.reload()
+    .then(() => {
+      isworkflow.data.forEach(data => {
+        if(data.is_active){
+          this.workflowStatus = true
+          const workflowValues = createResource({
+            url: `frappe.desk.form.load.getdoc`, 
+            method: 'GET', 
+            params: {
+                doctype: 'Workflow', 
+                name: data.name, 
+                _: Date.now()
+              },
+            })
+          workflowValues.fetch()
+          .then(() => {
+            this.status = workflowValues.data.docs[0].states
+            this.transition = workflowValues.data.docs[0].transitions
+          })
+          
         }
-      )
-      await docValues.reload();
-  
-      const fetchedData = docValues.data[0];
-      if(docValues.data[0].docstatus == 0){
-        this.Docstatus = docValues.data[0].docstatus;
-        this.Saved = 1
+      })
+    })
+
+    const userDetails = createResource({
+      url: `frappe.desk.form.load.getdoc`, 
+      method: 'GET', 
+      params: {
+        doctype: 'User', 
+        name: this.username, 
+        _: Date.now()
+      },
+    });
+
+    userDetails.fetch()
+    .then(() => {
+      userDetails.data.docs[0].roles.forEach( datas => {
+        this.roles.push(datas.roles);
+      })
+    });
+
+    const doctype = createResource({
+      url: 'pwa_template.utils.get_form_meta',
+      method: 'POST',
+      params: {
+        form: this.Frm,
+        doctype: this.doctype,
+      },
+    })
+    doctype.fetch()
+    .then(() => {
+        this.fields = doctype.data.fields;
+        this.submitable = doctype.data.is_submittable
+        this.doc = {};
+        if (this.name != null) {
+          const docValues = createListResource(
+            {
+              doctype: this.doctype,
+              fields: ['*'],
+              filters: {
+                name: this.name
+              },
+            }
+          )
+          docValues.reload()
+          .then(() => {
+            const fetchedData = docValues.data[0];
+            if(docValues.data[0].docstatus == 0){
+              this.Docstatus = docValues.data[0].docstatus;
+              this.Saved = 1
+            }
+            else if(docValues.data[0].docstatus == 1 || docValues.data[0].docstatus == 2){
+              this.Docstatus = docValues.data[0].docstatus;
+              this.Submit = 1;
+              this.Saved = 1;
+            }
+
+            if(this.workflowStatus){
+              this.workflow_state = docValues.data[0].workflow_state
+              this.styles()
+              
+            }
+            Object.keys(fetchedData).forEach(key => {
+              this.doc[key] = fetchedData[key];
+            });
+            this.updateFields();
+          })
+        }
       }
-      else if(docValues.data[0].docstatus == 1 || docValues.data[0].docstatus == 2){
-        this.Docstatus = docValues.data[0].docstatus;
-        this.Submit = 1;
-        this.Saved = 1;
-      }
-      Object.keys(fetchedData).forEach(key => {
-        this.doc[key] = fetchedData[key];
+    ) 
+  }
+
+  workflow() {
+    this.doc["doctype"] = this.doctype
+    const workflow = createResource({
+      url: `frappe.model.workflow.apply_workflow`, 
+      method: 'POST', 
+      params: {
+        doc: this.doc, 
+        action: this.action,
+      },
+    })
+
+    workflow.fetch()
+    .then(() => {
+      Object.entries(workflow.data).forEach(([key, value]) => {
+        this.doc[key] = value;
       });
-      this.updateFields();
-    }
+      this.actions(workflow.data)
+    })
+  }
+
+
+  actions(datas) {
+    this.doc["doctype"] = this.doctype
+    const workflowTransition = createResource({
+      url: `frappe.model.workflow.get_transitions`, 
+      method: 'POST', 
+      params: {
+        doc: datas
+      },
+    })
+    workflowTransition.fetch()
+    .then(() => {
+      if(workflowTransition.data.length > 0){
+        // console.log(workflowTransition.data[0].state, workflowTransition.data[0].action);
+        this.workflow_state = workflowTransition.data[0].state
+        this.action = workflowTransition.data[0].action
+        this.styles()
+        return true
+      }
+      else{
+        this.workflow_state = this.doc.workflow_state
+        this.action = ''
+        this.styles()
+        return true
+      }
+    })
+  }
+
+
+  styles() {
+    const Style = createListResource({
+      doctype: "Workflow State",
+        fields: ['style'],
+        filters: {
+          name: this.workflow_state
+        },
+    })
+    Style.reload()
+    .then(() => {
+      this.style = Style.data[0].style
+    })
   }
   
 
@@ -98,6 +206,7 @@ export default class Form extends EventEmitter {
       if (this.doc.hasOwnProperty(field.fieldname)) {
         field.value = this.doc[field.fieldname];
       }
+      this.actions(this.doc)
     });
   }
   
@@ -128,11 +237,9 @@ export default class Form extends EventEmitter {
       keysToRemove.forEach(key => {
         delete this.doc[key];
       });
-
-      console.log(this.doc.name);
+      
   
       if(this.doc.name){
-        console.log(this.doc.name);
         let currentName = this.doc.name;
         this.doc.amended_from = currentName;
     
@@ -149,6 +256,24 @@ export default class Form extends EventEmitter {
           this.updateFields();
           this.name = this.doc.name;
           this.Docstatus = 0;
+          if(this.fields.some(field => field.fieldtype === 'Attach')){
+            this.attachValues.forEach((item) => {
+              if (item.FeildName) { 
+                const updateFile = createListResource({
+                        doctype: 'File',
+                        filters: {
+                            name: item.name,
+                        }
+                    })
+                    updateFile.setValue.submit({
+                        name: item.name,
+                        "attached_to_doctype": this.doctype,
+                        "attached_to_name": response.name,
+                        "attached_to_field": item.FeildName
+                    })
+              }
+            });
+          }
           return response.name;
         })
         .catch(error => {
@@ -159,9 +284,23 @@ export default class Form extends EventEmitter {
       return Promise.reject(new Error('Validation failed'));
     }
   }
-  
-  
-  
+
+  update() {
+    const docCopy = { ...this.doc };
+    delete docCopy.modified_by;
+    delete docCopy.modified;
+
+    console.log(docCopy);
+    const update = createListResource({
+      doctype: this.doctype,
+      filters: {
+        name: this.name,
+      }
+    });
+    
+    update.setValue.submit(docCopy)
+      .then(() => this.Saved = 1);
+  }
   
   
   submit(name) {

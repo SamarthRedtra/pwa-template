@@ -1,5 +1,6 @@
 <template>
   <div class="p-2">
+    <p class=" text-[12px] text-gray-600">{{field.label}}</p>
     <TextInput
       type="text"
       size="sm"
@@ -8,6 +9,7 @@
       :disabled="isDisabled"
       v-model="value"
       @blur="formatValue"
+      class=" mt-1"
     />
   </div>
 </template>
@@ -39,6 +41,14 @@ watch(value, (newValue) => {
   const floatValue = parseFloat(newValue)
   if (!isNaN(floatValue)) {
     frm.setValue(field.fieldname, floatValue.toFixed(3))
+  }
+  if(field.value){
+    if (frm.doc[field.fieldname] != field.value) {
+      field.value = null
+      frm.Saved = 0;
+      frm.Submit = 0;
+      frm.Amend = 0;
+    }
   }
 })
 

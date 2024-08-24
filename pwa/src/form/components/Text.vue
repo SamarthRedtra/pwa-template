@@ -1,9 +1,10 @@
 <template>
   <div class="p-2">
-    <TextInput
+    <FormControl
       :type="'text'"
       size="sm"
       variant="subtle"
+      :label="field.label"
       :placeholder="field.label"
       :disabled="isDisabled"
       v-model="value"
@@ -12,7 +13,7 @@
 </template>
 
 <script setup>
-import { TextInput } from 'frappe-ui'
+import { FormControl } from 'frappe-ui'
 import { defineProps, watch, ref, computed } from 'vue'
 
 const { field, frm } = defineProps(['field', 'frm'])
@@ -31,5 +32,19 @@ watch(frm, (newFrm) => {
 
 watch(value, (newValue) => {
   frm.setValue(field.fieldname, newValue)
+
+  if(field.value){
+    if (frm.doc[field.fieldname] != field.value) {
+      field.value = null;
+      frm.Saved = 0;
+      frm.Submit = 0;
+      frm.Amend = 0;
+    }
+  }
+
 })
 </script>
+
+<style scoped>
+
+</style>
