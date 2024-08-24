@@ -28,13 +28,13 @@
             <p class="text-[12px] text-gray-700 mt-[2rem]">No record added</p>
         </div>
 
-        <div v-if="showPage" class="fixed inset-0 bg-black opacity-50 z-[999] w-full sm:w-96" @click="close"></div>
+        <div v-if="showPage" class="fixed inset-0 bg-black opacity-50 z-[99] w-full sm:w-96" @click="close"></div>
 
         <transition name="slide-up" @enter="handleEnter" @leave="handleLeave">
             <div
                 v-if="showPage"
                 ref="modal"
-                class="w-full sm:w-96 fixed bottom-0 left-0 h-[85vh] bg-white border-t border-gray-300 shadow-lg z-[1000] flex flex-col touch-area"
+                class="w-full sm:w-96 fixed bottom-0 left-0 h-[85vh] bg-white border-t border-gray-300 shadow-lg z-[100] flex flex-col touch-area"
                 @touchstart="handleTouchStart"
                 @touchmove="handleTouchMove"
                 @touchend="handleTouchEnd"
@@ -53,6 +53,7 @@
                             :table="props.field.fieldname"
                             :idexValue="indexValueSlected"
                             :idx="idx"
+                            :doctypeAttach="props.field.options"
                         ></component>
                         <div v-else class="p-2">
                             <p class="text-[14px] text-gray-600 font-semibold">{{ field.label }}</p>
@@ -101,8 +102,20 @@ let startY = ref(0)
 let endY = ref(0)
 const retrivedValue = ref(true)
 
+if (props.field.value){
+    let values = props.field.value
+    values.forEach(value => {
+        records.value.push({
+            ...value,
+            index: idx.value,
+            fieldtype: 'Text'
+        });
+        idx.value += 1
+    })
+}
+
 watch(props.field, (newField) => {
-    if(newField.value.length > 0 && retrivedValue.value == true){
+    if(newField.value.length > 0 && retrivedValue.value){
         newField.value.forEach(value => {
             records.value.push({
                 ...value,   
@@ -114,12 +127,6 @@ watch(props.field, (newField) => {
         retrivedValue.value = false
     }
 });
-
-
-// watch(props.frm.doc, (newdoc) => {
-//     console.log(newdoc)
-// })
-
 
 
 const Add = () => {
@@ -134,7 +141,6 @@ const Add = () => {
     }
     idx.value += 1;
     showPage.value = false;
-    // console.log(props.field.value)
 };
 
 const close = () => {
@@ -143,13 +149,12 @@ const close = () => {
     } else {
         let index = indexValueSlected.value > -1 ? indexValueSlected.value : idx.value;
         props.frm.doc[props.field.fieldname][index] = records.value[index];
-        // delete props.frm.doc[props.field.label][index]['index']
-        // delete props.frm.doc[props.field.label][index]['fieldtype']
     }
     
     showPage.value = false;
     indexValueSlected.value = -1;
 };
+
 
 
 
@@ -160,14 +165,13 @@ const newChild = () => {
 const showIndex = (index) => {
     indexValueSlected.value = index;
     showPage.value = true
-    console.log(records.value)
 };
 
 const update = () => {
     let doc = props.frm.doc;
 
-    if (doc[props.field.label]) {
-        let table = doc[props.field.label];
+    if (doc[props.field.fieldname]) {
+        let table = doc[props.field.fieldname];
         const recordIndex = records.value.findIndex(record => record.index === indexValueSlected.value);
 
         if (recordIndex !== -1) {
@@ -263,8 +267,23 @@ const filteredFields = ref([
     },
     {
         "fieldname": "customer_name",
-        "fieldtype": "Data",
+        "fieldtype": "Select",
         "label": "Customer Name",
+        "options": [
+            {
+                "label": "Live",
+                "value": "Live"
+            },
+            {
+                "label": "Die",
+                "value": "Die"
+            }
+        ]
+    },
+    {
+        "fieldname": "live",
+        "fieldtype": "Attach",
+        "label": "Live",
     },
     
 ])

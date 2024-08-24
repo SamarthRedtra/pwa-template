@@ -17,7 +17,8 @@
 import { FormControl, createListResource } from 'frappe-ui';
 import { defineProps, watch, ref, computed, onMounted } from 'vue';
 
-const { field, frm } = defineProps(['field', 'frm']);
+const { field, frm, table, idx, idexValue } = defineProps(['field', 'frm', 'table', 'idx', 'idexValue'])
+
 
 const value = ref('');  
 const displayValue = ref("");  
@@ -51,6 +52,11 @@ const fetchOptions = async () => {
       if (symbolValue.length > 0) {
         fetchedOptions.value.push(symbolValue[0].symbol);
       }
+      if (idexValue >= 0) {
+        let values = frm.doc[table][idexValue][field.fieldname];
+        const symbol = fetchedOptions.value.length > 0 ? fetchedOptions.value[0] : '';
+        displayValue.value = `${symbol}${values}`;
+      }
     }
   }
 };
@@ -70,18 +76,50 @@ watch(frm, (newFrm) => {
   }
 });
 
+
 watch(displayValue, (newValue) => {
-  const numericValue = newValue.replace(/[^0-9]/g, ''); 
+  let numericValue = newValue.replace(/[^0-9]/g, ''); 
   value.value = numericValue;
   const symbol = fetchedOptions.value.length > 0 ? fetchedOptions.value[0] : '';
   const valueWithSymbol = symbol + numericValue;
-  frm.setValue(field.fieldname, valueWithSymbol);
-  if(field.value){
-    if (frm.doc[field.fieldname] != field.value) {
-      field.value = null;
-      frm.Saved = 0;
-      frm.Submit = 0;
-      frm.Amend = 0;
+  numericValue = parseInt(numericValue)
+  if(table){
+    if(idexValue >= 0 ){
+      frm.setTableValue(field.fieldname, numericValue, table, idexValue)
+    }
+    else{
+      frm.setTableValue(field.fieldname, numericValue, table, idx)
+    }
+  } 
+  else{
+    frm.setValue(field.fieldname, numericValue)
+  } 
+  if(newValue){
+    if(table){
+      if(idexValue >= 0 ){
+        if(frm.doc[table][idexValue][field.fieldname] != field.value){
+          field.value = null
+          frm.Saved = 0;
+          frm.Submit = 0;
+          frm.Amend = 0;
+        }
+      }
+      else{
+        if(frm.doc[table][idx][field.fieldname] != field.value){
+          field.value = null
+          frm.Saved = 0;
+          frm.Submit = 0;
+          frm.Amend = 0;
+        }
+      }
+    }
+    else{
+      if (frm.doc[field.fieldname] != field.value) {
+          field.value = null
+          frm.Saved = 0;
+          frm.Submit = 0;
+          frm.Amend = 0;
+      }
     }
   }
 });

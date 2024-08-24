@@ -18,7 +18,9 @@
 import { TextInput } from 'frappe-ui'
 import { defineProps, ref, watch, computed, onMounted } from 'vue'
 
-const { field, frm } = defineProps(['field', 'frm'])
+// const { field, frm } = defineProps(['field', 'frm'])
+const { field, frm, table, idx, idexValue } = defineProps(['field', 'frm', 'table', 'idx', 'idexValue'])
+
 
 const value = ref("")
 
@@ -26,28 +28,66 @@ const isDisabled = computed(() => {
   return field.read_only == 1 || frm.Docstatus == 1 || frm.Docstatus == 2
 })
 
-// Initialize value with three decimal places on mount
+
 onMounted(() => {
-  if (field.value !== undefined && field.value !== null) {
-    const floatValue = parseFloat(field.value)
+  let retrivedValue
+  if(idexValue >= 0){
+    retrivedValue = frm.doc[table][idexValue][field.fieldname]
+  }
+  else{
+    retrivedValue = field.value
+  }
+
+  if (retrivedValue !== undefined && retrivedValue !== null) {
+    const floatValue = parseFloat(retrivedValue)
     if (!isNaN(floatValue)) {
       value.value = floatValue.toFixed(3)
     }
   }
 })
 
-// Watch for changes to the input value and update the form
 watch(value, (newValue) => {
   const floatValue = parseFloat(newValue)
   if (!isNaN(floatValue)) {
-    frm.setValue(field.fieldname, floatValue.toFixed(3))
+    if(table){
+      if(idexValue >= 0 ){
+        frm.setTableValue(field.fieldname, floatValue.toFixed(3), table, idexValue)
+      }
+      else{
+        frm.setTableValue(field.fieldname, floatValue.toFixed(3), table, idx)
+      }
+    } 
+    else{
+      frm.setValue(field.fieldname, floatValue.toFixed(3))
+    } 
+    // frm.setValue(field.fieldname, floatValue.toFixed(3))
   }
-  if(field.value){
-    if (frm.doc[field.fieldname] != field.value) {
-      field.value = null
-      frm.Saved = 0;
-      frm.Submit = 0;
-      frm.Amend = 0;
+  if(newValue){
+    if(table){
+      if(idexValue >= 0 ){
+        if(frm.doc[table][idexValue][field.fieldname] != field.value){
+          field.value = null
+          frm.Saved = 0;
+          frm.Submit = 0;
+          frm.Amend = 0;
+        }
+      }
+      else{
+        if(frm.doc[table][idx][field.fieldname] != field.value){
+          field.value = null
+          frm.Saved = 0;
+          frm.Submit = 0;
+          frm.Amend = 0;
+        }
+      }
+    }
+    else{
+      if (frm.doc[field.fieldname] != field.value) {
+          field.value = null
+          frm.Saved = 0;
+          frm.Submit = 0;
+          frm.Amend = 0;
+      }
     }
   }
 })

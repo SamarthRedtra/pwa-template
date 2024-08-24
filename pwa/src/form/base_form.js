@@ -46,7 +46,7 @@ export default class Form extends EventEmitter {
       },
     })
 
-    isworkflow.reload()
+    isworkflow.reload() 
     .then(() => {
       isworkflow.data.forEach(data => {
         if(data.is_active){
@@ -100,6 +100,7 @@ export default class Form extends EventEmitter {
         this.fields = doctype.data.fields;
         this.submitable = doctype.data.is_submittable;
         this.child = doctype.data.is_child_table;
+  
         this.doc = {};
         if (this.name != null) {
           const docValues = createResource({
@@ -208,7 +209,9 @@ export default class Form extends EventEmitter {
       if (this.doc.hasOwnProperty(field.fieldname)) {
         field.value = this.doc[field.fieldname];
       }
-      this.actions(this.doc)
+      if(this.workflowStatus){
+        this.actions(this.doc)
+      }
     });
     this.recordRetrieve = 1
   }
@@ -224,10 +227,10 @@ export default class Form extends EventEmitter {
 
   setTableValue(fieldname, value, table, index) {
       if (!this.doc[table]) {
-          this.doc[table] = [];
+        this.doc[table] = [];
       }
       if (!this.doc[table][index]) {
-          this.doc[table][index] = {};
+        this.doc[table][index] = {};
       }
       this.doc[table][index][fieldname] = value;
   }
@@ -251,6 +254,9 @@ export default class Form extends EventEmitter {
       const savedoc = createListResource({
         doctype: this.doctype,
       });
+
+      // console.log(this.fields)
+
   
       const keysToRemove = [
         'creation', 'docstatus', 'idx', 
@@ -278,24 +284,52 @@ export default class Form extends EventEmitter {
           this.updateFields();
           this.name = this.doc.name;
           this.Docstatus = 0;
-          if(this.fields.some(field => field.fieldtype === 'Attach')){
-            this.attachValues.forEach((item) => {
-              if (item.FeildName) { 
-                const updateFile = createListResource({
+          this.fields.forEach(field => {
+            if (field.fieldtype === 'Attach') {
+              this.attachValues.forEach(item => {
+                if (item.FeildName === field.fieldname) {
+                  const updateFile = createListResource({
+                    doctype: 'File',
+                    filters: {
+                      name: item.name,
+                    }
+                  });
+                  updateFile.setValue.submit({
+                    name: item.name,
+                    attached_to_doctype: this.doctype,
+                    attached_to_name: response.name,
+                    attached_to_field: item.FeildName
+                  });
+                  updateFile.fetch();
+                }
+              });
+            } else if (typeof field.value === 'object' && field.value != null) {
+              field.value.forEach(childField => {
+                console.log(childField)
+                if (childField.fieldtype === 'Attach') {
+                  this.attachValues.forEach(item => {
+                    console.log(item.FeildName,"++++++++++++++++++", childField.fieldname)
+                    if (item.FeildName === childField.fieldname) {
+                      const updateFile = createListResource({
                         doctype: 'File',
                         filters: {
-                            name: item.name,
+                          name: item.name,  
                         }
-                    })
-                    updateFile.setValue.submit({
+                      });
+                      updateFile.setValue.submit({
                         name: item.name,
-                        "attached_to_doctype": this.doctype,
-                        "attached_to_name": response.name,
-                        "attached_to_field": item.FeildName
-                    })
-              }
-            });
-          }
+                        attached_to_doctype: this.doctype,
+                        attached_to_name: response.name,
+                        attached_to_field: item.FeildName
+                      });
+                      updateFile.fetch();
+                    }
+                  });
+                }
+              });
+            }
+          });
+          
           return response.name;
         })
         .catch(error => {
@@ -312,7 +346,6 @@ export default class Form extends EventEmitter {
     delete docCopy.modified_by;
     delete docCopy.modified;
 
-    console.log(docCopy);
     const update = createListResource({
       doctype: this.doctype,
       filters: {
