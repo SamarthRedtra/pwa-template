@@ -90,8 +90,6 @@
   import { FileUploader, Button, FeatherIcon, Dialog, createDocumentResource, createListResource } from 'frappe-ui';
   import { reactive, ref, computed, defineProps, watch } from 'vue';
   
-
-  // const { field, frm } = defineProps(['field', 'frm'])
   const { field, frm, table, idx, idexValue, doctypeAttach } = defineProps(['field', 'frm', 'table', 'idx', 'idexValue', 'doctypeAttach'])
 
   const Value = ref('')
