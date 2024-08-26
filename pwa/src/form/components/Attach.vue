@@ -1,7 +1,10 @@
 <template>
     <div>
       <div class="p-2" v-if="!fileUploaded">
-        <p class=" text-[12px] text-gray-600 mb-1">{{field.label}}</p>
+        <div class=" flex">
+          <p class=" text-[12px] text-gray-600">{{field.label}}</p>
+          <p v-if="field.reqd == 1" class=" text-[12px] text-red-500 pl-1">*</p>
+        </div>
         <FileUploader
           :fileTypes="['image/*', 'application/pdf']"
           :validateFile="(fileObject) => {}"

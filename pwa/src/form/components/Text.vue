@@ -1,5 +1,9 @@
 <template>
   <div class="p-2">
+    <div class=" flex">
+      <p class=" text-[12px] text-gray-600">{{field.label}}</p>
+      <p v-if="field.reqd == 1" class=" text-[12px] text-red-500 pl-1">*</p>
+    </div>
     <TextInput
       :type="'text'"
       size="sm"

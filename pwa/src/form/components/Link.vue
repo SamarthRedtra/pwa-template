@@ -1,6 +1,9 @@
 <template>
   <div class="p-2">
-    <p class=" text-[12px] text-gray-600">{{field.label}}</p>
+    <div class=" flex">
+      <p class=" text-[12px] text-gray-600">{{field.label}}</p>
+      <p v-if="field.reqd == 1" class=" text-[12px] text-red-500 pl-1">*</p>
+    </div>
     <div class="relative w-full mt-1">
       <FormControl
         :type="'text'"

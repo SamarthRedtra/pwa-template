@@ -28,6 +28,7 @@ export default class Form extends EventEmitter {
     this.username = computed(() => session.user);
     this.attachValues = reactive([]);
     this.action = ref('')
+    this.data = ref({})
     this.doc = reactive({
       docstatus: 0, 
     });
@@ -91,13 +92,14 @@ export default class Form extends EventEmitter {
       url: 'pwa_template.utils.get_form_meta',
       method: 'POST',
       params: {
-        form: this.Frm,
-        doctype: this.doctype,
+        form_name: this.Frm,
+        doctype_name: this.doctype,
       },
     })
     doctype.fetch()
     .then(() => {
-        this.fields = doctype.data.fields;
+        this.data = doctype.data;
+        this.fields = doctype.data.form_fields;
         this.submitable = doctype.data.is_submittable;
         this.child = doctype.data.is_child_table;
   
@@ -255,9 +257,6 @@ export default class Form extends EventEmitter {
         doctype: this.doctype,
       });
 
-      // console.log(this.fields)
-
-  
       const keysToRemove = [
         'creation', 'docstatus', 'idx', 
         'modified', 'modified_by', 'owner', 'doctype'
@@ -305,7 +304,6 @@ export default class Form extends EventEmitter {
               });
             } else if (typeof field.value === 'object' && field.value != null) {
               field.value.forEach(childField => {
-                console.log(childField)
                 if (childField.fieldtype === 'Attach') {
                   this.attachValues.forEach(item => {
                     console.log(item.FeildName,"++++++++++++++++++", childField.fieldname)

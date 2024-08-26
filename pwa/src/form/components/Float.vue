@@ -1,6 +1,9 @@
 <template>
   <div class="p-2">
-    <p class=" text-[12px] text-gray-600">{{field.label}}</p>
+    <div class=" flex">
+      <p class=" text-[12px] text-gray-600">{{field.label}}</p>
+      <p v-if="field.reqd == 1" class=" text-[12px] text-red-500 pl-1">*</p>
+    </div>
     <TextInput
       type="text"
       size="sm"
@@ -47,18 +50,18 @@ onMounted(() => {
 })
 
 watch(value, (newValue) => {
-  const floatValue = parseFloat(newValue)
+  const floatValue = parseInt(newValue)
   if (!isNaN(floatValue)) {
     if(table){
       if(idexValue >= 0 ){
-        frm.setTableValue(field.fieldname, floatValue.toFixed(3), table, idexValue)
+        frm.setTableValue(field.fieldname, floatValue, table, idexValue)
       }
       else{
-        frm.setTableValue(field.fieldname, floatValue.toFixed(3), table, idx)
+        frm.setTableValue(field.fieldname, floatValue, table, idx)
       }
     } 
     else{
-      frm.setValue(field.fieldname, floatValue.toFixed(3))
+      frm.setValue(field.fieldname, floatValue)
     } 
     // frm.setValue(field.fieldname, floatValue.toFixed(3))
   }

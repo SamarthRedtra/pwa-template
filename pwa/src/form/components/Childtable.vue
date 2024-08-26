@@ -39,8 +39,8 @@
                 @touchmove="handleTouchMove"
                 @touchend="handleTouchEnd"
             >
-                <div class="p-2 border-b-[1.5px] border-gray-300 flex">
-                    <h1 class="font-bold text-[25px]">{{ field.label }}</h1>
+                <div class="p-2 border-b-[1.5px] border-gray-300 flex text-center">
+                    <h1 class="font-semibold text-[20px] mt-1">{{ field.label }}</h1>
                     <FeatherIcon name="x" @click="close" class="w-6 h-6 text-gray-700 mt-2 ml-auto hover:cursor-pointer" />
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
@@ -104,11 +104,12 @@ const retrivedValue = ref(true)
 
 if (props.field.value){
     let values = props.field.value
+    console.log(idx.value)
     values.forEach(value => {
         records.value.push({
             ...value,
             index: idx.value,
-            fieldtype: 'Text'
+            // fieldtype: 'Text'
         });
         idx.value += 1
     })
@@ -120,7 +121,7 @@ watch(props.field, (newField) => {
             records.value.push({
                 ...value,   
                 index: idx.value,
-                fieldtype: 'Text'
+                // fieldtype: 'Text'
             });
             idx.value += 1
         })
@@ -131,15 +132,15 @@ watch(props.field, (newField) => {
 
 const Add = () => {
     let doc = props.frm.doc;
-    if (doc[props.field.fieldname]) {
+    if (doc[props.field.fieldname][idx.value]) {
         let table = doc[props.field.fieldname];
         records.value.push({
             ...table[idx.value],
             index: idx.value,
-            fieldtype: table[idx.value].fieldtype
+            // fieldtype: table[idx.value].fieldtype
         });
+        idx.value += 1;
     }
-    idx.value += 1;
     showPage.value = false;
 };
 
@@ -178,12 +179,13 @@ const update = () => {
             records.value[recordIndex] = {
                 ...table[indexValueSlected.value],
                 index: indexValueSlected.value,
-                fieldtype: table[indexValueSlected.value].fieldtype
+                // fieldtype: table[indexValueSlected.value].fieldtype
             };
         }
     }
     showPage.value = false;
 };
+
 
 
 
@@ -259,34 +261,7 @@ const fieldMap = {
     Attach: Attach
 }
 
-const filteredFields = ref([
-    {
-        "fieldname": "section_break_dis6",
-        "fieldtype": "Section Break",
-        "label": "Name",
-    },
-    {
-        "fieldname": "customer_name",
-        "fieldtype": "Select",
-        "label": "Customer Name",
-        "options": [
-            {
-                "label": "Live",
-                "value": "Live"
-            },
-            {
-                "label": "Die",
-                "value": "Die"
-            }
-        ]
-    },
-    {
-        "fieldname": "live",
-        "fieldtype": "Attach",
-        "label": "Live",
-    },
-    
-])
+const filteredFields = ref(props.frm.data[props.field.options])
 </script>
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {

@@ -1,5 +1,8 @@
 <template>
   <div class="p-3">
+    <div class=" flex">
+      <p v-if="props.field.reqd == 1" class=" text-[12px] text-red-500 pl-1">*</p>
+    </div>
     <Checkbox
       v-model="fieldValue"
       size="sm"
