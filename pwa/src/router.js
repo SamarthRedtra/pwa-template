@@ -18,6 +18,11 @@ const routes = [
     name: 'ForgetPassword',
     component: () => import('@/pages/ForgetPassword.vue'),
   },
+  {
+    path: '/notifications',
+    name: 'Notifications',
+    component: () => import('@/pages/Notifications.vue'),
+  },
   { 
     path: '/signup',
     name: 'SignUp',
