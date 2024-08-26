@@ -30,7 +30,7 @@
 			</div>
 			<div class="w-full flex justify-end">
 			  <div class="p-1 pr-4 mb-2">
-				<FeatherIcon class="w-6 h-6 text-gray-600 pt-1 hover:text-black" name="bell" />
+				<FeatherIcon class="w-6 h-6 text-gray-600 pt-1 hover:text-black" name="bell" @click = "goToNotifications"/>
 			  </div>
 			  <User />
 			</div>
@@ -60,6 +60,10 @@ import { ref, watch } from 'vue';
 import User from "../form/components/User.vue";
 import { FeatherIcon, FormControl, createListResource, createResource } from "frappe-ui";
 import { useRouter } from 'vue-router';
+
+const goToNotifications = () => {
+  router.push('/notifications')
+}
 
 const inputValue = ref('');
 const showDropdown = ref(false);
