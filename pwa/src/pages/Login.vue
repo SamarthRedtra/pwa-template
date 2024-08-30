@@ -172,7 +172,8 @@ const baseURL = computed(() => {
   return `${url.protocol}//${url.hostname}`
 })
 
-const modifiedLogoURL = computed(() => `${baseURL.value}:8003/assets`)
+// const modifiedLogoURL = computed(() => `${baseURL.value}:8001/assets`)
+const modifiedLogoURL = computed(() => `${baseURL.value}/assets`)
 
 const myHeaders = new Headers()
 myHeaders.append(

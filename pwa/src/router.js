@@ -48,6 +48,11 @@ const routes = [
     name: 'Showform',
     component: () => import('@/pages/ShowForm.vue'),
   },
+  {
+    path: '/about',
+    name: 'About',
+    component: () => import('@/form/components/About.vue'),
+  },
 ];
 
 const router = createRouter({

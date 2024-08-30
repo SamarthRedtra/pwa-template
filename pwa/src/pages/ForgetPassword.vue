@@ -81,9 +81,13 @@ const baseURL = computed(() => {
   const url = new URL(currentURL.value)
   return `${url.protocol}//${url.hostname}`
 })
-baseURL.value = baseURL.value + ':8003/assets'
-const modifiedLogoURL = ref(`${baseURL.value}:8003/assets`)
-const modifiedForgetPasswordURL = ref(`${baseURL.value}:8003/`)
+// baseURL.value = baseURL.value + ':8003/assets'
+// const modifiedLogoURL = ref(`${baseURL.value}:8003/assets`)
+// const modifiedForgetPasswordURL = ref(`${baseURL.value}:8003/`)
+
+baseURL.value = baseURL.value + '/assets'
+const modifiedLogoURL = ref(`${baseURL.value}/assets`)
+const modifiedForgetPasswordURL = ref(`${baseURL.value}/`)
 
 const fetchLogo = () => {
   const myHeaders = new Headers()

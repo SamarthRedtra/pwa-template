@@ -175,7 +175,8 @@ const toggleConfirmPasswordVisibility = () => {
 const currentURL = ref(window.location.href)
 const baseURL = computed(() => {
   const url = new URL(currentURL.value)
-  return `${url.protocol}//${url.hostname}:8003`
+  // return `${url.protocol}//${url.hostname}:8001`
+  return `${url.protocol}//${url.hostname}`
 })
 const modifiedLogoURL = ref(`${baseURL.value}/assets`)
 
