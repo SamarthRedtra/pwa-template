@@ -104,7 +104,6 @@ const retrivedValue = ref(true)
 
 if (props.field.value){
     let values = props.field.value
-    console.log(idx.value)
     values.forEach(value => {
         records.value.push({
             ...value,

@@ -12,6 +12,18 @@
 				</div>
 			</div>
 		</div>
+		<div v-if="ifError" class="fixed w-full sm:w-96 text-center h-[8rem] p-3 z-[100] flex  mt-[5vh] animate-slideFromAbove">
+			<div class=" w-full rounded-md bg-white border-t border-gray-300 shadow-lg p-2">
+				<div class=" flex w-full">
+					<p class=" font-semibold">Error</p>
+					<FeatherIcon name="x" class=" w-5 h-5  ml-auto text-red-600 hover:cursor-pointer" @click="CloseError"/>
+				</div>
+				<div class=" p-2">
+					<p class=" text-[14px] truncate mt-3">{{Error}}</p>
+				</div>
+			</div>
+		</div>
+		<div v-if="ifError"  class="fixed inset-0 bg-black opacity-50 z-20 w-full sm:w-96" @click="CloseError"></div>
 		<div class="w-full flex-1 bg-gray-200 mt-14 overflow-hidden">
 			<div class="p-4">
 				<div class="flex bg-white p-2 rounded-lg items-center">
@@ -82,6 +94,7 @@
 						</div>                        
 					</div>
 				</div>
+				
 			</template>
 			<template #actions>
 				<div class="flex border-t-[1.5px] border-gray-200 p-2">
@@ -113,6 +126,8 @@ const id = ref('');
 const filter = ref([])
 const DocT = ref(null);
 const numberOfFilters = ref(0)
+const Error = ref('')
+const ifError = ref(false);
 
 
 watch(id, (newId) => {
@@ -123,6 +138,17 @@ watch(id, (newId) => {
 	}
 	loadData();
 });
+
+
+
+
+const CloseError = () => {
+	Error.value = '';
+	ifError.value = false;
+	router.push({
+		name: 'LandingPage',
+	})
+}
 
 
 const loadData = () => {
@@ -141,7 +167,6 @@ const loadData = () => {
 			page_length: selectedNumber.value,
 		},
 	});
-
 	DocT.value.fetch().then(() => {
 		if (DocT.value.data.length === 0) {
 			reports.value = [];
@@ -174,7 +199,12 @@ const loadData = () => {
 				};
 			});
 		});
-	});
+	})
+	.catch(error => {
+		const errorMessage = error.message || error.response?.data?.message || 'Something went wrong';
+		Error.value = errorMessage
+		ifError.value = true;
+	}); 
 };
 
 loadData();

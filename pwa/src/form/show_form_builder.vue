@@ -6,8 +6,8 @@
 					<FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
 					
 					<div :class="{'flex-1 text-center': !docName}">
-						<p class="font-semibold w-fit text-xl pr-2">{{ frm.doctype }}</p>
-						<p v-if="docName" class="pt-1 b-2 text-xs font-light text-gray-600">{{ docName }}</p>
+						<p class="font-semibold w-fit text-xl pr-2 truncate">{{ frm.doctype }}</p>
+						<p v-if="docName" class="pt-1 b-2 text-xs font-light text-gray-600 truncate">{{ docName }}</p>
 					</div>
 					
 					<div v-if="props.frm.workflowStatus">
@@ -191,10 +191,20 @@
 						@click="handleSubmit"   
 						/>
 					</div>
-					<div v-if="saveResult" 
-							 :class="['fixed bottom-[4rem] leading-5 pr-[65rem] pl-[2.5rem] z-50 w-full sm:w-96', saveSuccess ? 'animate-slide-in' : 'animate-slide-out']">
+					<div v-if="typeof saveResult == 'object'" 
+						:class="['fixed bottom-[4rem] leading-5 pr-[60rem] pl-[2.5rem] z-50 w-[20rem] sm:w-96 animate-slide-in']">
+						<div v-for="(result, index) in saveResult" :key="index" 
+									class="rounded w-[20rem] h-fit p-2 text-left mb-2"
+									:class="{'bg-blue-200 text-blue-500': saveSuccess, 'bg-red-200 text-red-500': !saveSuccess}">
+							<FeatherIcon v-if="saveSuccess" name="check" class="inline w-4 h-4 mr-2" />
+							<FeatherIcon v-else name="x" class="inline w-4 h-4 mr-2" />
+							{{ result }}
+						</div>
+					</div>
+					<div v-else-if="saveResult" 
+						:class="['fixed bottom-[4rem] leading-5 pr-[60rem] pl-[2.5rem] z-50 w-[20rem] sm:w-96 animate-slide-in']">
 						<div class="rounded w-[20rem] h-fit p-2 text-left"
-								 :class="{'bg-blue-200 text-blue-500': saveSuccess, 'bg-red-200 text-red-500': !saveSuccess}">
+								:class="{'bg-blue-200 text-blue-500': saveSuccess, 'bg-red-200 text-red-500': !saveSuccess}">
 							<FeatherIcon v-if="saveSuccess" name="check" class="inline w-4 h-4 mr-2" />
 							<FeatherIcon v-else name="x" class="inline w-4 h-4 mr-2" />
 							{{ saveResult }}
@@ -335,21 +345,43 @@ props.frm.Frm = props.frmname
 const handleSave = async () => {
 	loading.value = true;
 	submitable.value = props.frm.submitable;
+
 	try {
-		await props.frm.update(); 
-		saveResult.value = 'Updated successful!';
-		saveSuccess.value = true;
-		formAfterSave.value = props.frm.doc;
-		if(props.frm.workflow){}
+		const name = await props.frm.save();
+
+		if (typeof name === "object") {
+			saveResult.value = name;
+		} else if (typeof name === "string") {
+			docName.value = name;
+			saveResult.value = "Save successful!";
+			saveSuccess.value = true;
+
+			if (submitable.value === 1) {
+				showSubmitButton.value = true;
+			}
+
+			formAfterSave.value = props.frm.doc;
+			router.push({
+				path: "/showform",
+				query: {
+					docname: name,
+					frmname: props.frm.Frm,
+					doctype: props.frm.doctype,
+				},
+			});
+		}
 	} catch (error) {
 		saveResult.value = `Error: ${error.message}`;
 		saveSuccess.value = false;
 		console.error(`Error: ${error.message}`);
 	} finally {
 		loading.value = false;
-		setTimeout(() => { saveResult.value = ''; }, 2500);
+		setTimeout(() => {
+			saveResult.value = "";
+		}, 2500);
 	}
 };
+
 
 
 const handleAmend = async () => {
@@ -374,10 +406,18 @@ const handleAmend = async () => {
 const confirmSubmit = async () => {
 	loading.value = true;
 	try {
-		docStatus.value = await props.frm.submit(docName.value);
-		saveResult.value = 'Submit successful!';
-		saveSuccess.value = true;
-		docStatus.value = 1
+		const Value = await props.frm.submit(docName.value);
+		if(typeof Value == 'object'){
+			saveSuccess.value = false;
+			docStatus.value = 0
+			saveResult.value = Value
+		}
+		else{
+			docStatus.value = Value
+			saveResult.value = 'Submit successful!';
+			saveSuccess.value = true;
+			docStatus.value = 1
+		}
 		dialog1.value = false;
 	} catch (error) {
 		saveResult.value = `Error: ${error.message}`;

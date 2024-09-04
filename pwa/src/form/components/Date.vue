@@ -19,7 +19,6 @@
 import { FormControl } from 'frappe-ui'
 import { defineProps, ref, computed, watch } from 'vue'
 
-// const { field, frm } = defineProps(['field', 'frm'])
 const { field, frm, table, idx, idexValue } = defineProps(['field', 'frm', 'table', 'idx', 'idexValue'])
 
 

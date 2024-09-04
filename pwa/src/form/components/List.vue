@@ -8,7 +8,7 @@
         </div>
       </div>
       <div v-else>
-        <div v-if="props.reports.length === 0" class="flex justify-center items-center h-full text-center">
+        <div v-if="noReport" class="flex justify-center items-center h-full text-center">
           <p class="text-gray-600 text-sm mt-[14rem]">No Report Found</p>
         </div>
         <div v-else>
@@ -52,20 +52,34 @@
         <p class="text-[14px] pr-2 pl-2 hover:cursor-pointer">500</p>
       </div>
     </div>
-  </div>
+  </div>  
 </template>
 
 <script setup>
 import { FeatherIcon, Spinner } from 'frappe-ui';
-import { defineProps, defineEmits, watch } from 'vue';
+import { defineProps, defineEmits, watch, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps({
   reports: Array
 });
+
+const noReport = ref(false)
+
+if(props.reports){
+  if(props.reports.length > 0){
+    noReport.value = false
+  }
+  else{
+    noReport.value = true;
+  }
+}
+
+
+
 const emit = defineEmits(['handle-click', 'print-number']);
 const router = useRouter();
-let isLoading = true;
+let isLoading = false;
 
 const handleClickInternal = (report) => {
   emit('handle-click', report);
@@ -75,22 +89,23 @@ const printNumberInternal = (number) => {
   emit('print-number', number);
 };
 
-watch(
-  () => props.reports,
-  (newReports) => {
-    if (newReports) {
-      isLoading = false;
-    } else {
-      isLoading = true;
-      setTimeout(() => {
-        if (isLoading) {
-          if (window.confirm('Something went wrong! Would you like to go back?')) {
-            router.push({name: 'LandingPage'});
-          }
-        }
-      }, 4000);
-    }
-  },
-  { immediate: true }
-);
+// watch(
+//   () => props.reports,
+//   (newReports) => {
+//     if (newReports) {
+//       isLoading = false;
+//     } else {
+//       isLoading = true;
+//       setTimeout(() => {
+//         if (isLoading) {
+//           if (window.confirm('Something went wrong! Would you like to go back?')) {
+//             router.push({name: 'LandingPage'});
+//           }
+//         }
+//       }, 4000);
+//     }
+//   },
+//   { immediate: true }
+// );
+
 </script>

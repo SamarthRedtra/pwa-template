@@ -74,8 +74,7 @@ watch(value, (newValue) => {
 
 onMounted(() => {
   if (frm.Saved == 1) {
-    retriveValue = field.value
-    value.value = retriveValue
+    value.value = field.value
   }
 })
 

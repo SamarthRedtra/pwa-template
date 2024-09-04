@@ -52,6 +52,12 @@
 			</div>
 		  </div>
 		</div>
+		<div v-if="ifError" class='fixed bottom-[4rem] leading-5 pr-[60rem] pl-[2.5rem] z-50 w-[20rem] sm:w-96 animate-slide-in'>
+			<div class="rounded w-[20rem] h-fit p-2 text-left bg-red-200 text-red-500">
+				<FeatherIcon name="x" class="inline w-4 h-4 mr-2" />
+				{{ Error }}
+			</div>
+		</div>
 	  </div>
 	</div>
   </template>
@@ -60,6 +66,7 @@ import { ref, watch } from 'vue';
 import User from "../form/components/User.vue";
 import { FeatherIcon, FormControl, createListResource, createResource } from "frappe-ui";
 import { useRouter } from 'vue-router';
+import { retrieveDoc } from '../utils/check';
 
 const goToNotifications = () => {
   router.push('/notifications')
@@ -72,6 +79,8 @@ const options = ref([]);
 const router = useRouter();
 const Name = ref('');
 const filterValue = ref([])
+const Error = ref('')
+const ifError = ref(false)
 
 const loadData = () => {
 	const Links = createListResource({
@@ -97,35 +106,70 @@ watch(inputValue, (newValue) => {
 
 });
 
-const selectOption = (option) => {
+const selectOption = async (option) => {
+
+	const value = retrieveDoc(option.doctype_name)
+	console.log(value)
 	inputValue.value = option.doctype_name;
-	router.push({
-		name: 'ListPage',
-		query: {
-			frmname: option.name,
-			doctype: option.doctype_name,
+	
+	try {
+		const value = await retrieveDoc(option.doctype_name);
+		if(value.error){
+			Error.value = value.error
+			ifError.value = true;
+		}else if(value.success){
+			router.push({
+				name: 'ListPage',
+				query: {
+					frmname: option.name,
+					doctype: option.doctype_name,
+				}
+			});
 		}
-	});
+	} catch (error) {
+		console.error(error);
+	}
 	showDropdown.value = false;
 };
-const navigateToForm = (link) => {
-	router.push({
-		name: 'ListPage',
-		query: {
-			frmname: link.frm,
-			doctype: link.doctype,
+const navigateToForm = async (link) => {
+	try {
+		const value = await retrieveDoc(link.doctype);
+		if(value.error){
+			Error.value = value.error
+			ifError.value = true;
+		}else if(value.success){
+			router.push({
+				name: 'ListPage',
+				query: {
+					frmname: link.frm,
+					doctype: link.doctype,
+				}
+			});
 		}
-	});
+	} catch (error) {
+		console.error(error);
+	}
 };
 
-const handelNew = (link) => {
-	router.push({
-		name: 'Form',
-		query: {
-			frmname: link.frm,
-			doctype: link.doctype,
+
+const handelNew = async (link) => {
+	try {
+		const value = await retrieveDoc(link.doctype);
+		if(value.error){
+			Error.value = value.error
+			ifError.value = true;
+		}else if(value.success){
+			router.push({
+				name: 'Form',
+				query: {
+					frmname: link.frm,
+					doctype: link.doctype,
+				}
+			});
 		}
-	});
+	} catch (error) {
+		console.error(error);
+	}
 }
 
 const loadOptions = () => {

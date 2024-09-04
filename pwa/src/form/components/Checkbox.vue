@@ -1,15 +1,15 @@
 <template>
   <div class="p-3">
     <div class=" flex">
-      <p v-if="props.field.reqd == 1" class=" text-[12px] text-red-500 pl-1">*</p>
-    </div>
-    <Checkbox
+      <Checkbox
       v-model="fieldValue"
       size="sm"
       :label="field.label"
       :disabled="isDisabled"
-    />
-  </div>
+      />
+      <p v-if="props.field.reqd == 1" class=" text-[12px] text-red-500 pl-1">*</p>
+    </div>
+    </div>
 </template>
 
 <script setup>
@@ -30,6 +30,15 @@ const isDisabled = computed(() => {
   return props.field.read_only == 1 || props.frm.Docstatus == 1 || props.frm.Docstatus == 2
 })
 
+watch(props.field, (newValue) => {
+  if(newValue.value){
+    fieldValue.value = true
+  }else{
+    fieldValue.value = false
+  }
+})
+
+
 watch(fieldValue, (newValue) => {
   if(newValue){
     newValue = 1
@@ -47,7 +56,6 @@ watch(fieldValue, (newValue) => {
   else{
     props.frm.setValue(props.field.fieldname, newValue) 
   } 
-  // props.frm.setValue(props.field.fieldname, newValue)
 
   if(newValue){
     if(props.table){

@@ -23,6 +23,8 @@ export default class Form extends EventEmitter {
     this.style = ref('')
     this.status = ref([])
     this.child = ref(0)
+    this.DoctypeError = ref('')
+    this.workflowError = ref('')
     this.router = useRouter();
     this.transition = ref([]) 
     this.username = computed(() => session.user);
@@ -46,7 +48,7 @@ export default class Form extends EventEmitter {
         document_type: this.doctype
       },
     })
-
+    
     isworkflow.reload() 
     .then(() => {
       isworkflow.data.forEach(data => {
@@ -66,80 +68,62 @@ export default class Form extends EventEmitter {
             this.status = workflowValues.data.docs[0].states
             this.transition = workflowValues.data.docs[0].transitions
           })
-          
         }
       })
     })
 
-    const userDetails = createResource({
-      url: `frappe.desk.form.load.getdoc`, 
-      method: 'GET', 
-      params: {
-        doctype: 'User', 
-        name: this.username, 
-        _: Date.now()
-      },
-    });
+		const doctype = createResource({
+			url: 'pwa_template.utils.get_form_meta',
+			method: 'POST',
+			params: {
+				form_name: this.Frm,
+				doctype_name: this.doctype,
+			},
+		})
+		doctype.fetch()
+		.then(() => {
+				this.data = doctype.data;
+				this.fields = doctype.data.form_fields;
+				this.submitable = doctype.data.is_submittable;
+				this.child = doctype.data.is_child_table;
+	
+				this.doc = {};
+				if (this.name != null) {
+					const docValues = createResource({
+						url: `frappe.desk.form.load.getdoc`, 
+						method: 'GET', 
+						params: {
+							doctype: this.doctype, 
+							name: this.name,
+							_: Date.now()
+						},
+					})
+					docValues.reload()
+					.then(() => {
+						const fetchedData = docValues.data.docs[0];
+						if(docValues.data.docs[0].docstatus == 0){
+							this.Docstatus = docValues.data.docs[0].docstatus;
+							this.Saved = 1
+						}
+						else if(docValues.data.docs[0].docstatus == 1 || docValues.data.docs[0].docstatus == 2){
+							this.Docstatus = docValues.data.docs[0].docstatus;
+							this.Submit = 1;
+							this.Saved = 1;
+						}
 
-    userDetails.fetch()
-    .then(() => {
-      userDetails.data.docs[0].roles.forEach( datas => {
-        this.roles.push(datas.roles);
-      })
-    });
-
-    const doctype = createResource({
-      url: 'pwa_template.utils.get_form_meta',
-      method: 'POST',
-      params: {
-        form_name: this.Frm,
-        doctype_name: this.doctype,
-      },
-    })
-    doctype.fetch()
-    .then(() => {
-        this.data = doctype.data;
-        this.fields = doctype.data.form_fields;
-        this.submitable = doctype.data.is_submittable;
-        this.child = doctype.data.is_child_table;
-  
-        this.doc = {};
-        if (this.name != null) {
-          const docValues = createResource({
-            url: `frappe.desk.form.load.getdoc`, 
-            method: 'GET', 
-            params: {
-              doctype: this.doctype, 
-              name: this.name,
-              _: Date.now()
-            },
-          })
-          docValues.reload()
-          .then(() => {
-            const fetchedData = docValues.data.docs[0];
-            if(docValues.data.docs[0].docstatus == 0){
-              this.Docstatus = docValues.data.docs[0].docstatus;
-              this.Saved = 1
-            }
-            else if(docValues.data.docs[0].docstatus == 1 || docValues.data.docs[0].docstatus == 2){
-              this.Docstatus = docValues.data.docs[0].docstatus;
-              this.Submit = 1;
-              this.Saved = 1;
-            }
-
-            if(this.workflowStatus){
-              this.workflow_state = docValues.data.docs[0].workflow_state
-              this.styles()
-              
-            }
-            Object.keys(fetchedData).forEach(key => {
-              this.doc[key] = fetchedData[key];
-            });
-            this.updateFields();
-          })
-        }
-      }
-    ) 
+						if(this.workflowStatus){
+							this.workflow_state = docValues.data.docs[0].workflow_state
+							this.styles()
+							
+						}
+						Object.keys(fetchedData).forEach(key => {
+							this.doc[key] = fetchedData[key];
+						});
+						this.updateFields();
+					})
+				}
+			}
+		) 
   }
 
   workflow() {
@@ -251,7 +235,8 @@ export default class Form extends EventEmitter {
   }
 
   save() {
-    if (this.validateMandatory()) {
+    let validate = this.validateMandatory()
+    if (validate == true) {
       this.dirty = false;
       const savedoc = createListResource({
         doctype: this.doctype,
@@ -306,7 +291,6 @@ export default class Form extends EventEmitter {
               field.value.forEach(childField => {
                 if (childField.fieldtype === 'Attach') {
                   this.attachValues.forEach(item => {
-                    console.log(item.FeildName,"++++++++++++++++++", childField.fieldname)
                     if (item.FeildName === childField.fieldname) {
                       const updateFile = createListResource({
                         doctype: 'File',
@@ -331,11 +315,10 @@ export default class Form extends EventEmitter {
           return response.name;
         })
         .catch(error => {
-          console.log(error);
-          throw new Error('Error saving document');
+          throw new Error('Something went wrong');
         });
     } else {
-      return Promise.reject(new Error('Validation failed'));
+      return validate
     }
   }
 
@@ -357,7 +340,8 @@ export default class Form extends EventEmitter {
   
   
   submit(name) {
-    if (this.validateMandatory()) {
+    let validate = this.validateMandatory()
+    if (validate == true) {
       this.dirty = false;
       const submitdoc = createListResource({
         doctype: this.doctype,
@@ -378,10 +362,10 @@ export default class Form extends EventEmitter {
         })
         .catch(error => {
           console.log(error);
-          throw new Error('Error submitting document');
+          throw new Error('Something went wrong');
         });
     } else {
-      return Promise.reject(new Error('Validation failed'));
+      return validate ;
     }
   }
   
@@ -468,12 +452,16 @@ export default class Form extends EventEmitter {
   }
 
   validateMandatory() {
+    const error = ref([])
     for (let field of this.fields) {
       if (field.reqd && !this.doc[field.fieldname]) {
-        alert(`Error: ${this.doctype} has no value in ${field.label}`);
-        return false;
+        error.value.push( `Error: value missing for ${this.doctype}: ${field.label}`)
       }
     }
-    return true;
+    if(error.value.length > 0) {
+      return error.value
+    }else{
+      return true
+    }
   }
 }

@@ -22,6 +22,7 @@ import { session } from '../../data/session';
 import { useRoute, useRouter } from 'vue-router';
 
 const userName = computed(() => session.user);
+const roles = computed(() => session.roles);
 const imageBaseUrl = ref('');
 const currentURL = ref(window.location.href);
 const router = useRouter()
