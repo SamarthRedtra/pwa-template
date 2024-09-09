@@ -4,12 +4,14 @@
 			<div class="w-full sm:w-96 bg-white h-14 shadow-lg fixed top-0 z-10">
 				<div class="p-2 flex pt-3">
 					<FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
-					<p class="font-semibold w-fit text-xl pt-[8px] pr-2 truncate">{{ frm.doctype }}</p>
-					<div :class="statusClass">
-						<p :class="statusTextClass">{{ statusText }}</p>
-					</div>
+					<p class="font-semibold w-fit text-xl pt-[8px] pr-2">{{ frm.doctype }}</p>
 					<div class="w-full flex justify-end">
-						<div class="p-1 pr-4">
+						<div class=" mr-6">
+							<div :class="statusClass">
+								<p :class="statusTextClass">{{ statusText }}</p>
+							</div>
+						</div>
+						<div class="p-1 ">
 							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
 						</div>
 						<User />
@@ -54,7 +56,7 @@
 			</div>
 			<div v-if="ifworkflowError"  class="fixed inset-0 bg-black opacity-50 z-20 w-full sm:w-96" @click="WorkFlowError"></div>
 
-			<div class="flex w-full sm:w-96 pb-1 pt-1 fixed bottom-0  bg-white shadow-lg justify-center">
+			<div class="flex w-full sm:w-96 pl-3 pb-1 pt-1 fixed bottom-0 z-10 bg-white justify-center shadow-lg">
 				<div class="pt-1 w-[20rem] sm:w-[20rem] ml-3">
 					<Button
 						v-if="props.frm.Saved == 0"
@@ -66,7 +68,7 @@
 						:loadingText="'Saving...'"
 						:disabled="false"
 						:link="null"
-						class="w-full h-full p-2 "
+						class="w-full h-[2rem] p-2 "
 						@click="handleSave"
 					/>
 					<Button
@@ -128,7 +130,7 @@
 							<template #icon>
 								<FeatherIcon
 									name="more-vertical"
-									class="h-6 w-6 text-gray-600 hover:text-black"
+									class="h-6 w-6 mt-[1px] text-gray-600 hover:text-black"
 								/>
 							</template>
 						</Button>

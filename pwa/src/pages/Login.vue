@@ -87,13 +87,13 @@
   </div>
   <div class="fixed bottom-0 flex justify-end w-full sm:w-96">
     <transition name="fade">
-      <div v-if="loginSuccess" class="w-full sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-green-500 rounded-lg opacity-100 font-regular animate-slide-in flex items-center">
+      <div v-if="loginSuccess" class="w-[20rem] sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-green-500 rounded-lg opacity-100 font-regular animate-slide-in flex items-center">
         <FeatherIcon class="w-4 h-4 cursor-pointer mt-[2px] text-green-300" name="check" />
         <span class="ml-4">Login successfully</span>
       </div>
     </transition>
     <transition name="fade">
-      <div v-if="loginError" class="w-full sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-red-500 rounded-lg opacity-100 font-regular animate-slide-in flex items-center">
+      <div v-if="loginError" class="w-[20rem] sm:w-72 p-2 mb-4 text-sm leading-5 text-white bg-red-500 rounded-lg opacity-100 font-regular animate-slide-in flex items-center">
         <FeatherIcon class="w-4 h-4 cursor-pointer mt-[2px] text-red-300" name="x" @click="loginError = false" />
         <span class="ml-4">Login failed</span>
       </div>

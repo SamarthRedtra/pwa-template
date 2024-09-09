@@ -41,6 +41,23 @@ export default class Form extends EventEmitter {
     });
   }
   async initFields() {
+    const doctype_work = createResource({
+      url: 'frappe.client.get_list',
+          method: 'POST',
+          params: {
+              doctype: "Workflow",
+              filters: {
+                "document_type": this.doctype,
+              },
+              fields: ["*"],
+          },
+    })
+  
+    doctype_work.reload()
+    .then(() => {
+      console.log(doctype_work.data[0])
+    })
+  
     const isworkflow = createListResource({
       doctype: "Workflow",
       fields: ['*'],

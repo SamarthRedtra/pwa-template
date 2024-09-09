@@ -14,6 +14,18 @@
     <script>
       window.csrf_token = '{{ frappe.session.csrf_token }}'
     </script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js').then((registration) => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          }, (error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+        });
+      }
+      </script>
+      
     <!-- <script src="https://gist.github.com/esafwan/d3345bb0cd3bedc8101701991e77fbb9.js"></script> -->
     <script type="module" src="/src/main.js"></script>
   </body>

@@ -48,9 +48,9 @@ export const session = reactive({
 					session.roles = sessionRoles(Roles)
 					document.cookie = `roles=${JSON.stringify(session.roles)}; path=/;`
 					session.login.reset()
-					router.replace(data.default_route || '/')
 				})
-		},
+			router.replace(data.default_route || '/')
+			}
 	}),
 
 	logout: createResource({

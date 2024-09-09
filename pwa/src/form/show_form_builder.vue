@@ -10,18 +10,18 @@
 						<p v-if="docName" class="pt-1 b-2 text-xs font-light text-gray-600 truncate">{{ docName }}</p>
 					</div>
 					
-					<div v-if="props.frm.workflowStatus">
-						<div :class="styleClass">
-							<p :class="styleTextClass">{{ props.frm.workflow_state }}</p>
-						</div>
-					</div>
-					<div v-else>
-						<div :class="statusClass">
-							<p :class="statusTextClass">{{ statusText }}</p>
-						</div>
-					</div>
 					
 					<div class="w-full flex justify-end">
+						<div v-if="props.frm.workflowStatus" class=" mr-6">
+							<div :class="styleClass">
+								<p :class="styleTextClass">{{ props.frm.workflow_state }}</p>
+							</div>
+						</div>	
+						<div v-else class=" mr-6">
+							<div :class="statusClass">
+								<p :class="statusTextClass">{{ statusText }}</p>
+							</div>
+						</div>
 						<div class="p-1 pr-4">
 							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
 						</div>
@@ -32,7 +32,7 @@
 			
 
 			<div class="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-14 p-2 bg-gray-100">
-				<div class=" bg-white rounded-lg">
+				<div class=" bg-white p-2 rounded-lg">
 					<component
 						v-for="field in filteredFields"
 						:key="field.fieldname"para should align perfectly 

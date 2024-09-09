@@ -29,7 +29,7 @@
         </div>
 
         <div v-if="showPage" class="fixed inset-0 bg-black opacity-50 z-[99] w-full sm:w-96" @click="close"></div>
-
+        
         <transition name="slide-up" @enter="handleEnter" @leave="handleLeave">
             <div
                 v-if="showPage"

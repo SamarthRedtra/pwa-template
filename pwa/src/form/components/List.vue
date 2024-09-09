@@ -8,11 +8,11 @@
         </div>
       </div>
       <div v-else>
-        <div v-if="noReport" class="flex justify-center items-center h-full text-center">
-          <p class="text-gray-600 text-sm mt-[14rem]">No Report Found</p>
+        <div v-if="reports.length <= 0" class="flex justify-center items-center h-full text-center">
+          <p class="text-gray-600 text-sm mt-[14rem]">No Record Found</p>
         </div>
         <div v-else>
-          <div v-for="report in props.reports" :key="report.id" class="border-gray-200 border-b-[1.5px]">
+          <div v-for="report in reports" :key="report.id" class="border-gray-200 border-b-[1.5px]">
             <div class="p-2 flex pt-2 items-center">
               <FeatherIcon name="file-text" class="text-gray-600 h-5 w-5" />
               <div class="flex flex-col pl-3">
@@ -22,18 +22,25 @@
                   <p class="text-gray-600 text-[10px] truncate w-[4rem]">{{ report.creation }}</p>
                 </div>
               </div>
-              <div v-if="report.amended_from_value" class="ml-auto">
-                <div v-if="report.docstatus === 0" class="p-1 pl-2 pr-2 bg-red-300 rounded-xl w-[4.3rem] text-center">
-                  <p class="text-[12px] text-red-700">Draft</p>
-                </div>
-                <div v-else-if="report.docstatus === 1" class="p-1 pl-2 pr-2 bg-blue-300 rounded-xl">
-                  <p class="text-[12px] text-blue-700">Submitted</p>
-                </div>
-                <div v-else-if="report.docstatus === 2" class="p-1 pl-2 pr-2 bg-red-300 rounded-xl">
-                  <p class="text-[12px] text-red-700">Cancelled</p>
+              <div v-if="report.workflow_state" class="ml-auto">
+                <div :class="styleClass" class="ml-auto">
+                  <p :class="styleTextClass">{{ report.workflow_state }}</p>
                 </div>
               </div>
-              <div :class="!report.amended_from_value ? 'touchable ml-auto' : 'touchable ml-[20px]'" @click="handleClickInternal(report)">
+              <div v-else class="ml-auto">
+                <div v-if="report.amended_from_value" class="ml-auto">
+                  <div v-if="report.docstatus === 0" class="p-1 pl-2 pr-2 bg-red-300 rounded-xl w-[4.3rem] text-center">
+                    <p class="text-[12px] text-red-700">Draft</p>
+                  </div>
+                  <div v-else-if="report.docstatus === 1" class="p-1 pl-2 pr-2 bg-blue-300 rounded-xl">
+                    <p class="text-[12px] text-blue-700">Submitted</p>
+                  </div>
+                  <div v-else-if="report.docstatus === 2" class="p-1 pl-2 pr-2 bg-red-300 rounded-xl">
+                    <p class="text-[12px] text-red-700">Cancelled</p>
+                  </div>
+                </div>
+              </div>
+              <div class="ml-auto" @click="handleClickInternal(report)">
                 <FeatherIcon name="arrow-right" class="text-gray-600 h-5 w-5 hover:text-black hover:cursor-pointer" />
               </div>
             </div>
@@ -52,34 +59,53 @@
         <p class="text-[14px] pr-2 pl-2 hover:cursor-pointer">500</p>
       </div>
     </div>
-  </div>  
+  </div>                                                            
 </template>
 
 <script setup>
-import { FeatherIcon, Spinner } from 'frappe-ui';
-import { defineProps, defineEmits, watch, ref } from 'vue';
+import { FeatherIcon, Spinner, createListResource } from 'frappe-ui';
+import { defineProps, defineEmits, watch, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps({
   reports: Array
 });
 
-const noReport = ref(false)
-
-if(props.reports){
-  if(props.reports.length > 0){
-    noReport.value = false
-  }
-  else{
-    noReport.value = true;
-  }
-}
-
-
-
 const emit = defineEmits(['handle-click', 'print-number']);
 const router = useRouter();
-let isLoading = false;
+const reports = ref(props.reports);
+const isLoading = ref(true);
+
+watch(() => props.reports, (newReports) => {
+  reports.value = newReports;
+  isLoading.value = false;
+});
+
+const style = ref('');
+
+const styleClass = computed(() => {
+  switch (style.value) {
+    case 'Success': return 'bg-green-200 h-[2rem] rounded-2xl text-center';
+    case 'Danger': return 'bg-red-200 h-[2rem] rounded-2xl text-center';
+    case 'Inverse': return 'bg-black h-[2rem] rounded-2xl text-center';
+    case 'Warning': return 'bg-orange-200 h-[2rem] rounded-2xl text-center';
+    case 'Info': return 'bg-blue-200 h-[2rem] rounded-2xl text-center';
+    case 'Primary': return 'bg-[#9fa8da] h-[2rem] rounded-2xl text-center';
+    default: return 'bg-gray-200 h-[2rem] rounded-2xl text-center';
+  }
+});
+
+const styleTextClass = computed(() => {
+  switch (style.value) {
+    case 'Success': return 'p-2 text-sm w-20 text-green-500';
+    case 'Danger': return 'p-2 text-sm w-20 text-red-500';
+    case 'Inverse': return 'p-2 text-sm w-20 text-white';
+    case 'Warning': return 'p-2 text-sm w-20 text-orange-500';
+    case 'Info': return 'p-2 text-sm w-20 text-blue-500';
+    case 'Primary': return 'p-2 text-sm w-20 text-[#1a237e]';
+    default: return 'p-2 text-sm w-20 text-gray-500';
+  }
+});
 
 const handleClickInternal = (report) => {
   emit('handle-click', report);
@@ -89,23 +115,18 @@ const printNumberInternal = (number) => {
   emit('print-number', number);
 };
 
-// watch(
-//   () => props.reports,
-//   (newReports) => {
-//     if (newReports) {
-//       isLoading = false;
-//     } else {
-//       isLoading = true;
-//       setTimeout(() => {
-//         if (isLoading) {
-//           if (window.confirm('Something went wrong! Would you like to go back?')) {
-//             router.push({name: 'LandingPage'});
-//           }
-//         }
-//       }, 4000);
-//     }
-//   },
-//   { immediate: true }
-// );
+watch(() => reports.value, (newReports) => {
+  newReports.forEach((report) => {
+    if (report.workflow_state) {
+      createListResource({
+        doctype: 'Workflow State',
+        filters: { name: report.workflow_state },
+        fields: ['*']
+      }).reload().then((res) => {
+        style.value = res[0].style;
+      });
+    }
+  });
+});
 
 </script>

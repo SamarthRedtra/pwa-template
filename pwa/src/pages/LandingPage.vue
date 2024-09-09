@@ -30,7 +30,7 @@
 			</div>
 			<div class="w-full flex justify-end">
 			  <div class="p-1 pr-4 mb-2">
-				<FeatherIcon class="w-6 h-6 text-gray-600 pt-1 hover:text-black" name="bell" @click = "goToNotifications"/>
+				<FeatherIcon class="w-[26px] h-[26px] text-gray-600 pt-[2px] hover:text-black" name="bell" @click="goToNotifications"/>
 			  </div>
 			  <User />
 			</div>
@@ -54,32 +54,41 @@
 		</div>
 		<div v-if="ifError" class='fixed bottom-[4rem] leading-5 pr-[60rem] pl-[2.5rem] z-50 w-[20rem] sm:w-96 animate-slide-in'>
 			<div class="rounded w-[20rem] h-fit p-2 text-left bg-red-200 text-red-500">
-				<FeatherIcon name="x" class="inline w-4 h-4 mr-2" />
-				{{ Error }}
+				<div class=" flex">
+					<div class=" h-full">
+						<FeatherIcon name="x" class="inline w-6 h-6 mr-2 hover:cursor-pointer" @click="close"/>
+					</div>
+					<span v-html="Error"></span>
+				</div>
 			</div>
 		</div>
 	  </div>
 	</div>
-  </template>
-  <script setup>
+</template>
+<script setup>
 import { ref, watch } from 'vue';
 import User from "../form/components/User.vue";
 import { FeatherIcon, FormControl, createListResource, createResource } from "frappe-ui";
 import { useRouter } from 'vue-router';
 import { retrieveDoc } from '../utils/check';
+import { landingPage } from '../stores/formStore';
+
 
 const goToNotifications = () => {
   router.push('/notifications')
 }
 
+const store = landingPage();
+
+
 const inputValue = ref('');
 const showDropdown = ref(false);
-const links = ref([]);
-const options = ref([]); 
+const links = ref(store.links);
+const options = ref(store.options); 
 const router = useRouter();
 const Name = ref('');
-const filterValue = ref([])
-const Error = ref('')
+const filterValue = ref('')
+const Error = ref()
 const ifError = ref(false)
 
 const loadData = () => {
@@ -95,6 +104,7 @@ const loadData = () => {
 			frm: item.form_name,
 			doctype: item.doctype_name,
 		}));
+		store.setLinks(links.value)
 	});
 }
 
@@ -103,13 +113,15 @@ loadData();
 watch(inputValue, (newValue) => {
 	filterValue.value = ['PWA Form', "doctype_name", "like", `%${newValue}%`]
 	loadOptions()
-
 });
+
+const close = () => {
+	ifError.value = false
+}
+
 
 const selectOption = async (option) => {
 
-	const value = retrieveDoc(option.doctype_name)
-	console.log(value)
 	inputValue.value = option.doctype_name;
 	
 	try {
@@ -199,6 +211,7 @@ const loadOptions = () => {
 				options.value = []
 			}
 		}
+		store.setOptions(options.value)
 	});
 };
 

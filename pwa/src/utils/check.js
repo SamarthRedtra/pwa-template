@@ -10,7 +10,7 @@ export const retrieveDoc = async (name_doctype) => {
         await doc.reload();
         return {success : doc}; 
     } catch (error) {
-        const errorMessage = `${error.response.status} - ${error.response.statusText}`;
+        const errorMessage = error.messages[0]
         return { error : errorMessage}; 
     }
 };
