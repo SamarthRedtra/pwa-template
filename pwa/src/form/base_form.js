@@ -2,6 +2,7 @@ import { reactive, ref, computed, watch } from 'vue';
 import EventEmitter from './eventemiitor';
 import { useRouter } from 'vue-router';
 import { session } from '../data/session';
+import { exportedData } from '../json/exported-pwaJSON';
 import { createListResource, createResource, createDocumentResource } from 'frappe-ui';
 
 export default class Form extends EventEmitter {
@@ -41,22 +42,22 @@ export default class Form extends EventEmitter {
     });
   }
   async initFields() {
-    const doctype_work = createResource({
-      url: 'frappe.client.get_list',
-          method: 'POST',
-          params: {
-              doctype: "Workflow",
-              filters: {
-                "document_type": this.doctype,
-              },
-              fields: ["*"],
-          },
-    })
+    // const doctype_work = createResource({
+    //   url: 'frappe.client.get_list',
+    //       method: 'POST',
+    //       params: {
+    //           doctype: "Workflow",
+    //           filters: {
+    //             "document_type": this.doctype,
+    //           },
+    //           fields: ["*"],
+    //       },
+    // })
   
-    doctype_work.reload()
-    .then(() => {
-      console.log(doctype_work.data[0])
-    })
+    // doctype_work.reload()
+    // .then(() => {
+    //   console.log(doctype_work.data[0])
+    // })
   
     const isworkflow = createListResource({
       doctype: "Workflow",
@@ -89,58 +90,47 @@ export default class Form extends EventEmitter {
       })
     })
 
-		const doctype = createResource({
-			url: 'pwa_template.utils.get_form_meta',
-			method: 'POST',
-			params: {
-				form_name: this.Frm,
-				doctype_name: this.doctype,
-			},
-		})
-		doctype.fetch()
-		.then(() => {
-				this.data = doctype.data;
-				this.fields = doctype.data.form_fields;
-				this.submitable = doctype.data.is_submittable;
-				this.child = doctype.data.is_child_table;
-	
-				this.doc = {};
-				if (this.name != null) {
-					const docValues = createResource({
-						url: `frappe.desk.form.load.getdoc`, 
-						method: 'GET', 
-						params: {
-							doctype: this.doctype, 
-							name: this.name,
-							_: Date.now()
-						},
-					})
-					docValues.reload()
-					.then(() => {
-						const fetchedData = docValues.data.docs[0];
-						if(docValues.data.docs[0].docstatus == 0){
-							this.Docstatus = docValues.data.docs[0].docstatus;
-							this.Saved = 1
-						}
-						else if(docValues.data.docs[0].docstatus == 1 || docValues.data.docs[0].docstatus == 2){
-							this.Docstatus = docValues.data.docs[0].docstatus;
-							this.Submit = 1;
-							this.Saved = 1;
-						}
+    const doctype = await exportedData(this.doctype);
+    this.data = doctype;
+    this.fields = doctype.form_fields;
+    this.submitable = doctype.is_submittable;
+    this.child = doctype.is_child_table;
 
-						if(this.workflowStatus){
-							this.workflow_state = docValues.data.docs[0].workflow_state
-							this.styles()
-							
-						}
-						Object.keys(fetchedData).forEach(key => {
-							this.doc[key] = fetchedData[key];
-						});
-						this.updateFields();
-					})
-				}
-			}
-		) 
+    this.doc = {};
+    if (this.name != null) {
+      const docValues = createResource({
+        url: `frappe.desk.form.load.getdoc`, 
+        method: 'GET', 
+        params: {
+          doctype: this.doctype, 
+          name: this.name,
+          _: Date.now()
+        },
+      })
+      docValues.reload()
+      .then(() => {
+        const fetchedData = docValues.data.docs[0];
+        if(docValues.data.docs[0].docstatus == 0){
+          this.Docstatus = docValues.data.docs[0].docstatus;
+          this.Saved = 1
+        }
+        else if(docValues.data.docs[0].docstatus == 1 || docValues.data.docs[0].docstatus == 2){
+          this.Docstatus = docValues.data.docs[0].docstatus;
+          this.Submit = 1;
+          this.Saved = 1;
+        }
+
+        if(this.workflowStatus){
+          this.workflow_state = docValues.data.docs[0].workflow_state
+          this.styles()
+          
+        }
+        Object.keys(fetchedData).forEach(key => {
+          this.doc[key] = fetchedData[key];
+        });
+        this.updateFields();
+      })
+    }
   }
 
   workflow() {
