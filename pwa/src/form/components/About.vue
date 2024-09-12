@@ -1,12 +1,12 @@
 <template>
 	<div class="w-full sm:w-96 bg-white flex flex-col items-center h-screen overflow-hidden">
-		<div class="w-full sm:w-96 bg-white h-14 shadow-lg fixed top-0 z-10 fixed">
+		<div class="w-full sm:w-96 bg-white h-14 shadow-lg fixed top-0 z-10">
 			<div class="p-2 flex pt-3">
 				<FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
 				<p class="font-semibold text-2xl pt-[6px] pr-2 truncate w-[10rem]">Profile</p>
 				<div class="w-full flex justify-end">
 					<div class="p-1 pr-4">
-						<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
+						<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell" @click="goToNotification"/>
 					</div>
 				</div>
 			</div>
@@ -75,6 +75,10 @@ const userDetails = createListResource({
   }
 });
 
+const goToNotification = () => {
+	router.push('/notifications')
+}
+
 const userInfo = ref({});
 
 const close = () => {
@@ -89,8 +93,6 @@ const baseURL = computed(() => {
 const ImageUrl = computed(() => {
   return imageBaseUrl.value ? `${baseURL.value}${imageBaseUrl.value}` : '';
 });
-
-console.log(ImageUrl)
 
 userDetails.reload().then(() => {
   imageBaseUrl.value = userDetails.data[0].user_image || '';

@@ -12,7 +12,7 @@
 							</div>
 						</div>
 						<div class="p-1 ">
-							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
+							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell"  @click="gotToNotification"/>
 						</div>
 						<User />
 					</div>
@@ -415,6 +415,11 @@ const dropdownOptions = computed(() => {
 });
 
 const router = useRouter();
+
+
+const gotToNotification = () => {
+	router.push('/notifications')
+}
 
 const goBack = () => {
 	props.frm.doc = {

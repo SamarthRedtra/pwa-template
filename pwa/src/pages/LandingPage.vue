@@ -30,7 +30,7 @@
 			</div>
 			<div class="w-full flex justify-end">
 			  <div class="p-1 pr-4 mb-2">
-				<FeatherIcon class="w-[26px] h-[26px] text-gray-600 pt-[2px] hover:text-black" name="bell" @click="goToNotifications"/>
+				<FeatherIcon class="w-[26px] h-[26px] text-gray-600 pt-[2px] hover:text-black hover:cursor-pointer" name="bell" @click="goToNotifications"/>
 			  </div>
 			  <User />
 			</div>

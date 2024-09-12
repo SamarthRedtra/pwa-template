@@ -6,7 +6,7 @@
 				<p class="font-semibold text-xl pt-[8px] pr-2 truncate w-[10rem]">{{ route.query.doctype }}</p>
 				<div class="w-full flex justify-end">
 					<div class="p-1 pr-4">
-						<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
+						<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell" @click="goToNotifications" />
 					</div>
 					<User />
 				</div>
@@ -140,6 +140,9 @@ const ifError = ref(false);
 const Keys = ref([])
 const is_active = ref(false)
 
+const goToNotifications = () => {
+  router.push('/notifications')
+}
 
 const handleTouchStart = (event) => {
     startY.value = event.touches[0].clientY

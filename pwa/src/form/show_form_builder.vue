@@ -23,14 +23,13 @@
 							</div>
 						</div>
 						<div class="p-1 pr-4">
-							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
+							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell" @click="goToNotification" />
 						</div>
 						<User />
 					</div>
 				</div>
 			</div>
 			
-
 			<div class="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-14 p-2 bg-gray-100">
 				<div class=" bg-white p-2 rounded-lg">
 					<component
@@ -621,6 +620,11 @@ const dropdownOptions = computed(() => {
 });
 
 const router = useRouter();
+
+
+const goToNotification = () => {
+	router.push('/notifications')
+}
 
 const goBack = () => {
 	props.frm.doc = {
