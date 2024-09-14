@@ -6,17 +6,17 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   plugins: [
-    frappeui(), 
-    vue(), 
+    frappeui(),
+    vue(),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'PWA', 
-        short_name: 'PWA', 
-        start_url: '/pwa', 
-        display: 'standalone', 
-        background_color: '#ffffff', 
-        theme_color: '#ffffff', 
+        name: 'PWA',
+        short_name: 'PWA',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#ffffff',
         icons: [
           {
             src: '/assets/pwa_template/manifest/images_pwa_app.png',
@@ -30,7 +30,49 @@ export default defineConfig({
           },
         ],
       },
-    })
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,png,svg}'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.destination === 'document',
+            handler: 'NetworkFirst', // Tries network first, then cache for HTML files
+            options: {
+              cacheName: 'html-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // Cache HTML for 30 days
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) =>
+              request.destination === 'script' || request.destination === 'style',
+            handler: 'CacheFirst', // Cache scripts and styles
+            options: {
+              cacheName: 'static-resources-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // Cache static assets for 30 days
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'CacheFirst', // Cache images
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // Cache images for 30 days
+              },
+            },
+          },
+        ],
+      },
+      devOptions: {
+        enabled: true, // Enable PWA support in development mode
+      },
+    }),
   ],
   resolve: {
     alias: {

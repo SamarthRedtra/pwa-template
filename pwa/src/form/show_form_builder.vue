@@ -7,29 +7,31 @@
 					
 					<div :class="{'flex-1 text-center': !docName}">
 						<p class="font-semibold w-fit text-xl pr-2 truncate">{{ frm.doctype }}</p>
-						<p v-if="docName" class="pt-1 b-2 text-xs font-light text-gray-600 truncate">{{ docName }}</p>
+						<div class=" flex">
+							<p v-if="docName" class="pt-1 b-2 text-xs font-light max-w-[9rem] text-gray-600 truncate">{{ docName }}</p>
+							<div v-if="props.frm.workflowStatus"  >
+								<div :class="styleClass">
+									<p :class="styleTextClass">{{ props.frm.workflow_state }}</p>
+								</div>
+							</div>	
+							<div v-else class=" pl-2">
+								<div :class="statusClass" >
+									<p :class="statusTextClass">{{ statusText }}</p>
+								</div>
+							</div>
+						</div>
 					</div>
 					
 					
 					<div class="w-full flex justify-end">
-						<div v-if="props.frm.workflowStatus" class=" mr-6">
-							<div :class="styleClass">
-								<p :class="styleTextClass">{{ props.frm.workflow_state }}</p>
-							</div>
-						</div>	
-						<div v-else class=" mr-6">
-							<div :class="statusClass">
-								<p :class="statusTextClass">{{ statusText }}</p>
-							</div>
-						</div>
 						<div class="p-1 pr-4">
-							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell" @click="goToNotification" />
+							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell" @click="router.push('/notifications')" />
 						</div>
 						<User />
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-14 p-2 bg-gray-100">
 				<div class=" bg-white p-2 rounded-lg">
 					<component
@@ -544,16 +546,16 @@ const statusClass = computed(() => {
 		return '';
 	}
 	else if (props.frm.Saved === 0) {
-		return 'bg-red-200 h-[2rem] rounded-2xl text-center';
+		return 'border-red-500 border-[0.5px] rounded-2xl text-center';
 	} else if (props.frm.Saved === 1) {
 		if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
-			return 'bg-red-200 h-[2rem] rounded-2xl text-center';
+			return 'border-red-500 border-[0.5px]  mr-1 rounded-2xl text-center';
 		} else if (props.frm.Docstatus === 2) {
-			return 'bg-red-200 rounded-2xl text-center';
+			return 'border-red-500 border-[0.5px] rounded-2xl text-center';
 		}else if (props.frm.Submit === 1) {
-			return 'bg-blue-200 h-[2rem] rounded-2xl text-center';
+			return 'border-blue-500 border-[0.5px] rounded-2xl text-center';
 		}  else {
-			return 'bg-blue-200 h-[2rem] rounded-2xl text-center';
+			return 'border-blue-500 border-[0.5px] rounded-2xl text-center';
 		}
 	}
 });
@@ -563,16 +565,16 @@ const statusTextClass = computed(() => {
 		return '';
 	}
 	else if (props.frm.Saved === 0) {
-		return 'p-2 text-sm w-20 text-red-500';
+		return 'px-2 text-sm w-20 text-red-500';
 	} else if (props.frm.Saved === 1) {
 		if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
-			return 'p-2 text-sm w-20 text-red-500';
+			return ' px-2 w-fit text-[12px] text-red-600';
 		} else if (props.frm.Docstatus === 2) {
-			return 'p-2 text-sm w-20 text-red-500';
+			return 'px-2 text-[12px] w-20 text-red-500';
 		} else if (props.frm.Submit === 1) {
-			return 'p-2 text-sm w-20 text-blue-500';
+			return 'px-2 text-[12px] w-20 text-blue-500';
 		}  else {
-			return 'p-2 text-sm w-20 text-blue-500';
+			return 'px-2 text-[12px] w-20 text-blue-500';
 		}
 	}
 });
@@ -621,10 +623,6 @@ const dropdownOptions = computed(() => {
 
 const router = useRouter();
 
-
-const goToNotification = () => {
-	router.push('/notifications')
-}
 
 const goBack = () => {
 	props.frm.doc = {

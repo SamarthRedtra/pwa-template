@@ -2,17 +2,19 @@
 	<div class="w-full sm:w-96 bg-white flex justify-center h-screen">
 		<div class="w-full flex flex-col">
 			<div class="w-full sm:w-96 bg-white h-14 shadow-lg fixed top-0 z-10">
-				<div class="p-2 flex pt-3">
+				<div class=" flex px-2 items-center">
 					<FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
-					<p class="font-semibold w-fit text-xl pt-[8px] pr-2">{{ frm.doctype }}</p>
-					<div class="w-full flex justify-end">
-						<div class=" mr-6">
+					<div class=" flex-1 text-center">
+						<p class="font-semibold min-w-[5rem] w-fit text-xl pt-[8px] pr-2">{{ frm.doctype }}</p>
+						<div>
 							<div :class="statusClass">
 								<p :class="statusTextClass">{{ statusText }}</p>
 							</div>
 						</div>
+					</div>
+					<div class="w-full flex justify-end">
 						<div class="p-1 ">
-							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell"  @click="gotToNotification"/>
+							<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell"  @click="router.push('/notifications')"/>
 						</div>
 						<User />
 					</div>
@@ -71,32 +73,6 @@
 						class="w-full h-[2rem] p-2 "
 						@click="handleSave"
 					/>
-					<Button
-						v-else-if="docStatus === 1 && !showSubmitButton"
-						:variant="'outline'"
-						theme="gray"
-						size="sm"
-						label="Cancel"
-						:loading="loading"
-						:loadingText="'Cancelling...'"
-						:disabled="false"
-						:link="null"
-						class="w-full h-full p-2 "
-						@click="handleCancel"
-					/>
-					<Button
-						v-else
-						:variant="'solid'"
-						theme="gray"
-						size="sm"
-						label="Submit"
-						:loading="loading"
-						:loadingText="'Submitting...'"
-						:disabled="false"
-						:link="null"
-						class="w-full h-full p-2 "
-						@click="handleSubmit"
-					/>
 					<div v-if="typeof saveResult == 'object'" 
 						:class="['fixed bottom-[4rem] leading-5 pr-[60rem] pl-[2.5rem] z-50 w-[20rem] sm:w-96 animate-slide-in']">
 						<div v-for="(result, index) in saveResult" :key="index" 
@@ -114,13 +90,6 @@
 							<FeatherIcon v-if="saveSuccess" name="check" class="inline w-4 h-4 mr-2" />
 							<FeatherIcon v-else name="x" class="inline w-4 h-4 mr-2" />
 							{{ saveResult }}
-						</div>
-					</div>
-					<div v-if="deletedMessage" 
-							 class="fixed bottom-[4rem] leading-5 pr-[65rem] pl-[2.5rem] z-50 w-full sm:w-96 animate-slide-in">
-						<div class="rounded w-[20rem] h-fit p-2 text-left bg-blue-200 text-blue-500">
-							<FeatherIcon name="info" class="inline w-4 h-4 mr-2" />
-							{{ deletedMessage }}
 						</div>
 					</div>
 				</div>
@@ -169,12 +138,13 @@ const props = defineProps({
 	frnname: String,
 });
 
+
 const fieldMap = {
 	Data: Text,
 	Select: Select,
 	Int: Int,
 	Autocomplete: Autocomplete,
-	Dynamic_Link: Select,
+	// Dynamic_Link: Select,
 	Heading: Badge,
 	Datetime: DateTime,
 	Date: Date,
@@ -302,27 +272,6 @@ const handleSave = async () => {
 };
 
 
-
-const handleSubmit = async () => {
-	loading.value = true;
-	try {
-		docStatus.value = await props.frm.submit(docName.value);
-		saveResult.value = 'Submit successful!';
-		saveSuccess.value = true;
-	} catch (error) {
-		saveResult.value = `Error: ${error.message}`;
-		saveSuccess.value = false;
-		console.error(`Error: ${error.message}`);
-	} finally {
-		loading.value = false;
-		setTimeout(() => { saveResult.value = ''; }, 2500);
-	}
-};
-
-const handleCancel = async () => {
-	console.log(docStatus.value)
-};
-
 const filteredFields = computed(() => {
 	const result = [];
 	let sectionCount = 0;
@@ -340,53 +289,20 @@ const filteredFields = computed(() => {
 const statusText = computed(() => {
 	if (props.frm.Saved === 0) {
 		return 'Not Saved';
-	} else if (props.frm.Saved === 1) {
-		if (props.frm.submitable === 1 && docStatus.value !== 1) {
-			return 'Draft';
-		} else if (docStatus.value === 1) {
-			return 'Submitted';
-		} else {
-			return 'Saved';
-		}
 	}
 });
 
 const statusClass = computed(() => {
 	if (props.frm.Saved === 0) {
-		return 'bg-red-200 h-[2rem] rounded-2xl text-center';
-	} else if (props.frm.Saved === 1) {
-		if (props.frm.submitable === 1 && docStatus.value !== 1) {
-			return 'bg-red-200 h-[2rem] rounded-2xl text-center';
-		} else if (docStatus.value === 1) {
-			return 'bg-green-200 h-[2rem] rounded-2xl text-center';
-		} else {
-			return 'bg-green-200 h-[2rem] rounded-2xl text-center';
-		}
+		return ' px-[2px] mt-[1px] border-red-500 border-[0.5px] rounded-2xl text-center';
 	}
 });
 
 const statusTextClass = computed(() => {
 	if (props.frm.Saved === 0) {
-		return 'p-2 text-sm w-20 text-red-500';
-	} else if (props.frm.Saved === 1) {
-		if (props.frm.submitable === 1 && docStatus.value !== 1) {
-			return 'p-2 text-sm w-20 text-red-500';
-		} else if (docStatus.value === 1) {
-			return 'p-2 text-sm w-20 text-green-500';
-		} else {
-			return 'p-2 text-sm w-20 text-green-500';
-		}
+		return ' text-[12px]  text-red-500';
 	}
 });
-
-const deletedMessage = ref('');
-const handleDeleteClick = async () => {
-	if (docName.value) {
-		deletedMessage.value = await props.frm.delete(docName.value);
-		console.log(deletedMessage.value);
-		setTimeout(() => { deletedMessage.value = ''; }, 2500);
-	}
-};
 
 const dropdownOptions = computed(() => {
 	const options = [
@@ -398,15 +314,12 @@ const dropdownOptions = computed(() => {
 			label: "Create New " + props.frm.doctype,
 			icon: () => h(FeatherIcon, { name: "file-plus" }),
 		},
+		{
+			label: "Reload",
+			icon: () => h(FeatherIcon, { name: "refresh-ccw" }),
+			onClick: () => { window.location.reload();}
+		},
 	];
-
-	if (!showSubmitButton.value && docStatus.value !== 1) {
-		options.push({
-			label: 'Delete',
-			icon: () => h(FeatherIcon, { name: "trash" }),
-			onClick: handleDeleteClick
-		});
-	}
 
 	return [{
 		group: 'Actions',
@@ -415,11 +328,6 @@ const dropdownOptions = computed(() => {
 });
 
 const router = useRouter();
-
-
-const gotToNotification = () => {
-	router.push('/notifications')
-}
 
 const goBack = () => {
 	props.frm.doc = {

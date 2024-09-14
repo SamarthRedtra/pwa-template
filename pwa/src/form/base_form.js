@@ -2,7 +2,8 @@ import { reactive, ref, computed, watch } from 'vue';
 import EventEmitter from './eventemiitor';
 import { useRouter } from 'vue-router';
 import { session } from '../data/session';
-import { exportedData } from '../json/exported-pwaJSON';
+// import { exportedData } from '../json/exported-pwaJSON';
+import form from  '../json/form_list.json'
 import { createListResource, createResource, createDocumentResource } from 'frappe-ui';
 
 export default class Form extends EventEmitter {
@@ -13,6 +14,7 @@ export default class Form extends EventEmitter {
     this.fields = reactive([]);
     this.dirty = false;
     this.Frm = frm;
+    this.JSON = ref({})
     this.Docstatus = ref(0);
     this.Saved = ref(0);
     this.Submit = ref(0);
@@ -41,6 +43,7 @@ export default class Form extends EventEmitter {
       this.dirty = true;
     });
   }
+
   async initFields() {
     // const doctype_work = createResource({
     //   url: 'frappe.client.get_list',
@@ -90,11 +93,21 @@ export default class Form extends EventEmitter {
       })
     })
 
-    const doctype = await exportedData(this.doctype);
-    this.data = doctype;
-    this.fields = doctype.form_fields;
-    this.submitable = doctype.is_submittable;
-    this.child = doctype.is_child_table;
+    form.form_list.forEach(async (frm) => {
+      if (frm.form_name === this.Frm) {
+        
+        const fileJson = await import(`../json/${frm.file_name}`);
+        
+        this.JSON = fileJson.default;  
+        this.data = this.JSON;
+        this.fields = this.JSON.pwa_form_fields;
+        this.submitable = this.JSON.is_submittable;
+        this.child = this.JSON.is_child_table;
+      }
+    });
+    
+
+    // const doctype = await exportedData(this.doctype);
 
     this.doc = {};
     if (this.name != null) {
@@ -225,7 +238,7 @@ export default class Form extends EventEmitter {
       if (!this.doc[table][index]) {
         this.doc[table][index] = {};
       }
-      this.doc[table][index][fieldname] = value;
+      this.doc[table][index][fieldname] = value;  
   }
 
   removeTableVale(table, index) {
@@ -258,7 +271,7 @@ export default class Form extends EventEmitter {
       });
       
   
-      if(this.doc.name){
+      if(this.doc.name && this.Docstatus){
         let currentName = this.doc.name;
         this.doc.amended_from = currentName;
     
@@ -267,8 +280,9 @@ export default class Form extends EventEmitter {
         let newIncrement = nameParts.length > 1 ? parseInt(nameParts[1]) + 1 : 1;
         this.doc.name = `${baseName}-${newIncrement}`;
       }
-  
-      return savedoc.insert.submit(this.doc)
+
+      if(this.doc.name){
+        return savedoc.setValue.submit(this.doc)
         .then(response => {
           Object.assign(this.doc, response);
           this.Saved = 1;
@@ -324,6 +338,64 @@ export default class Form extends EventEmitter {
         .catch(error => {
           throw new Error('Something went wrong');
         });
+      }else{
+        return savedoc.insert.submit(this.doc)
+        .then(response => {
+          Object.assign(this.doc, response);
+          this.Saved = 1;
+          this.updateFields();
+          this.name = this.doc.name;
+          this.Docstatus = 0;
+          this.fields.forEach(field => {
+            if (field.fieldtype === 'Attach') {
+              this.attachValues.forEach(item => {
+                if (item.FeildName === field.fieldname) {
+                  const updateFile = createListResource({
+                    doctype: 'File',
+                    filters: {
+                      name: item.name,
+                    }
+                  });
+                  updateFile.setValue.submit({
+                    name: item.name,
+                    attached_to_doctype: this.doctype,
+                    attached_to_name: response.name,
+                    attached_to_field: item.FeildName
+                  });
+                  updateFile.fetch();
+                }
+              });
+            } else if (typeof field.value === 'object' && field.value != null) {
+              field.value.forEach(childField => {
+                if (childField.fieldtype === 'Attach') {
+                  this.attachValues.forEach(item => {
+                    if (item.FeildName === childField.fieldname) {
+                      const updateFile = createListResource({
+                        doctype: 'File',
+                        filters: {
+                          name: item.name,  
+                        }
+                      });
+                      updateFile.setValue.submit({
+                        name: item.name,
+                        attached_to_doctype: this.doctype,
+                        attached_to_name: response.name,
+                        attached_to_field: item.FeildName
+                      });
+                      updateFile.fetch();
+                    }
+                  });
+                }
+              });
+            }
+          });
+          
+          return response.name;
+        })
+        .catch(error => {
+          throw new Error('Something went wrong');
+        });
+      }
     } else {
       return validate
     }

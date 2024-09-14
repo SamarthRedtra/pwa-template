@@ -5,9 +5,6 @@
 				<FeatherIcon class="w-8 h-8 text-gray-600 hover:text-black" name="chevron-left" @click="goBack" />
 				<p class="font-semibold text-xl pt-[8px] pr-2 truncate w-[15rem]">Notification</p>
 				<div class="w-full flex justify-end">
-					<div class="p-1 pr-4">
-						<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black" name="bell" />
-					</div>
 					<User />
 				</div>
 			</div>

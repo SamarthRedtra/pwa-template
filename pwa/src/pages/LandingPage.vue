@@ -21,7 +21,13 @@
 			  </FormControl>
 			  <div v-if="showDropdown" class="absolute left-[1rem] right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-20">
 				<div v-if="options.length > 0" v-for="option in options" :key="option" class="p-2 hover:bg-gray-200 cursor-pointer" @click="selectOption(option)">
-				  {{ option.doctype_name }}
+					<p class=" text-[14px] font-medium truncate">
+						{{ option.doctype }}
+					</p>
+					<p class=" text-[12px] text-gray-600 truncate">
+						{{ option.frm }}
+					</p>
+					<hr>
 				</div>
 				<div v-else class="p-2 hover:bg-gray-200 cursor-pointer text-[12px] text-gray-600" @click="selectOption(option)">
 					No Record Found
@@ -30,7 +36,7 @@
 			</div>
 			<div class="w-full flex justify-end">
 			  <div class="p-1 pr-4 mb-2">
-				<FeatherIcon class="w-[26px] h-[26px] text-gray-600 pt-[2px] hover:text-black hover:cursor-pointer" name="bell" @click="goToNotifications"/>
+				<FeatherIcon class="w-[26px] h-[26px] text-gray-600 pt-[2px] hover:text-black hover:cursor-pointer" name="bell" @click="router.push('/notifications')"/>
 			  </div>
 			  <User />
 			</div>
@@ -40,7 +46,7 @@
 		  <div class="p-4">
 			<p class="font-medium text-xl pl-1 text-gray-600">Quick Link</p>
 			<div class="bg-white h-[28rem] w-full rounded-lg mt-2 overflow-y-auto no-scrollbar p-2">
-				<div v-for="link in links" :key="link.id" class="border-gray-200 border-b-[1.5px]">
+				<div v-for="link in links" :key="link.doctype" class="border-gray-200 border-b-[1.5px]">
 					<div class="p-2 flex pt-2 touchable" @click="navigateToForm(link)">
 						<FeatherIcon name="link" class="text-gray-600 h-5 w-5" />
 						<p class="text-gray-600 pl-3 truncate w-[8rem]">{{ link.doctype }}</p>
@@ -72,18 +78,26 @@ import { FeatherIcon, FormControl, createListResource, createResource } from "fr
 import { useRouter } from 'vue-router';
 import { retrieveDoc } from '../utils/check';
 import { landingPage } from '../stores/formStore';
-
-
-const goToNotifications = () => {
-  router.push('/notifications')
-}
+import formList from '../json/form_list.json'
 
 const store = landingPage();
+const links = ref(store.links);
 
+formList.form_list.forEach((form) => {
+
+	const exists = links.value.some(link => link.doctype === form.doctype_name);
+
+	if (!exists) {
+		links.value.push({
+			frm: form.form_name,
+			doctype: form.doctype_name,
+		});
+		store.setLinks(links.value);
+	}
+});
 
 const inputValue = ref('');
 const showDropdown = ref(false);
-const links = ref(store.links);
 const options = ref(store.options); 
 const router = useRouter();
 const Name = ref('');
@@ -91,29 +105,20 @@ const filterValue = ref('')
 const Error = ref()
 const ifError = ref(false)
 
-const loadData = () => {
-	const Links = createListResource({
-		doctype: 'PWA Form',
-		fields: ['*'],
-		filters: Name.value ? { name: Name.value } :{}
-	});
 
-	Links.reload().then(() => {
-		links.value = Links.data.map(item => ({
-			id: item.name,
-			frm: item.form_name,
-			doctype: item.doctype_name,
-		}));
-		store.setLinks(links.value)
-	});
-}
+const filteredLinks = ref([...links.value]);
 
-loadData();
+options.value = filteredLinks.value
 
 watch(inputValue, (newValue) => {
-	filterValue.value = ['PWA Form', "doctype_name", "like", `%${newValue}%`]
-	loadOptions()
+	
+  filteredLinks.value = links.value.filter(link => 
+    link.doctype.toLowerCase().includes(newValue.toLowerCase()) || 
+    link.frm.toLowerCase().includes(newValue.toLowerCase())
+  );
+  options.value = filteredLinks.value;
 });
+
 
 const close = () => {
 	ifError.value = false
@@ -122,10 +127,9 @@ const close = () => {
 
 const selectOption = async (option) => {
 
-	inputValue.value = option.doctype_name;
-	
+	inputValue.value = option.doctype;	
 	try {
-		const value = await retrieveDoc(option.doctype_name);
+		const value = await retrieveDoc(option.doctype);
 		if(value.error){
 			Error.value = value.error
 			ifError.value = true;
@@ -133,8 +137,8 @@ const selectOption = async (option) => {
 			router.push({
 				name: 'ListPage',
 				query: {
-					frmname: option.name,
-					doctype: option.doctype_name,
+					frmname: option.frm,
+					doctype: option.doctype,
 				}
 			});
 		}
@@ -143,6 +147,8 @@ const selectOption = async (option) => {
 	}
 	showDropdown.value = false;
 };
+
+
 const navigateToForm = async (link) => {
 	try {
 		const value = await retrieveDoc(link.doctype);
@@ -184,39 +190,39 @@ const handelNew = async (link) => {
 	}
 }
 
-const loadOptions = () => {
-	const opt = createResource({
-		url: 'frappe.desk.reportview.get',
-		method: 'POST',
-		params: {
-			doctype: 'PWA Form',
-			filters: filterValue.value.length > 0 ? [filterValue.value] : [],
-			fields: ["*"],
-			distinct: false,
-			start: 0,
-			page_length: filterValue.value.length > 0 ? 500 : 5,
-		},
-	});
+// const loadOptions = () => {
+// 	const opt = createResource({
+// 		url: 'frappe.desk.reportview.get',
+// 		method: 'POST',
+// 		params: {
+// 			doctype: 'PWA Form',
+// 			filters: filterValue.value.length > 0 ? [filterValue.value] : [],
+// 			fields: ["*"],
+// 			distinct: false,
+// 			start: 0,
+// 			page_length: filterValue.value.length > 0 ? 500 : 5,
+// 		},
+// 	});
 
-	opt.fetch().then(() => {
-		const data = opt.data;
-		if (data.values) {
-			if(data.values.map){
-				options.value = data.values.map(row => ({
-					name: row[0],
-					doctype_name: row[9],
-				}));
-			}
-			else{
-				options.value = []
-			}
-		}
-		store.setOptions(options.value)
-	});
-};
+// 	opt.fetch().then(() => {
+// 		const data = opt.data;
+// 		if (data.values) {
+// 			if(data.values.map){
+// 				options.value = data.values.map(row => ({
+// 					name: row[0],
+// 					doctype_name: row[9],
+// 				}));
+// 			}
+// 			else{
+// 				options.value = []
+// 			}
+// 		}
+// 		store.setOptions(options.value)
+// 	});
+// };
 
 
-loadOptions()
+// loadOptions()
 
 
 document.addEventListener('click', (event) => {

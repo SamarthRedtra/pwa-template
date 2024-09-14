@@ -6,7 +6,7 @@
     </div>
     <Autocomplete
       class=" mt-1"
-      :options="field.options"
+      :options="field.options.split('\n')"
       v-model="Value"
       size="sm"
       variant="subtle"

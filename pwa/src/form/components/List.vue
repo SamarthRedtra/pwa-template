@@ -29,14 +29,16 @@
               </div>
               <div v-else class="ml-auto">
                 <div v-if="report.amended_from_value" class="ml-auto">
-                  <div v-if="report.docstatus === 0" class="p-1 pl-2 pr-2 bg-red-300 rounded-xl w-[4.3rem] text-center">
-                    <p class="text-[12px] text-red-700">Draft</p>
+                  <div v-if="report.docstatus === 0" class=" w-[4rem] ">
+                    <div  class=" border-[0.5px] border-red-500 rounded-md text-center w-[3rem]">
+                      <p class="text-[10px] text-red-600">Draft</p>
+                    </div>
                   </div>
-                  <div v-else-if="report.docstatus === 1" class="p-1 pl-2 pr-2 bg-blue-300 rounded-xl">
-                    <p class="text-[12px] text-blue-700">Submitted</p>
+                  <div v-else-if="report.docstatus === 1" class=" border-blue-500 border-[0.5px] rounded-md px-2">
+                    <p class="text-[10px] text-blue-600">Submitted</p>
                   </div>
-                  <div v-else-if="report.docstatus === 2" class="p-1 pl-2 pr-2 bg-red-300 rounded-xl">
-                    <p class="text-[12px] text-red-700">Cancelled</p>
+                  <div v-else-if="report.docstatus === 2" class=" border-red-500 border-[0.5px] rounded-md px-2">
+                    <p class="text-[10px] text-red-600">Cancelled</p>
                   </div>
                 </div>
               </div>
@@ -65,14 +67,13 @@
 <script setup>
 import { FeatherIcon, Spinner, createListResource } from 'frappe-ui';
 import { defineProps, defineEmits, watch, ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
 
 const props = defineProps({
   reports: Array
 });
 
+
 const emit = defineEmits(['handle-click', 'print-number']);
-const router = useRouter();
 const reports = ref(props.reports);
 const isLoading = ref(true);
 
@@ -82,6 +83,9 @@ watch(() => props.reports, (newReports) => {
 });
 
 const style = ref('');
+
+
+
 
 const styleClass = computed(() => {
   switch (style.value) {

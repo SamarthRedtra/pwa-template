@@ -6,7 +6,7 @@
 				<p class="font-semibold text-xl pt-[8px] pr-2 truncate w-[10rem]">{{ route.query.doctype }}</p>
 				<div class="w-full flex justify-end">
 					<div class="p-1 pr-4">
-						<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell" @click="goToNotifications" />
+						<FeatherIcon class="w-6 h-6 text-gray-600 hover:text-black hover:cursor-pointer" name="bell" @click="router.push('/notifications')" />
 					</div>
 					<User />
 				</div>
@@ -122,6 +122,8 @@ import User from "../form/components/User.vue";
 import { useRoute, useRouter } from 'vue-router';
 import List from '../form/components/List.vue';
 import { listPage } from '../stores/formStore';
+import formList from '../json/form_list.json'
+
 
 const store = listPage()
 
@@ -139,10 +141,16 @@ const Error = ref('')
 const ifError = ref(false);
 const Keys = ref([])
 const is_active = ref(false)
+const FileJson = ref({})
 
-const goToNotifications = () => {
-  router.push('/notifications')
-}
+formList.form_list.forEach(async (frm) => {
+      if (frm.form_name === route.query.frmname) {
+        const fileJson = await import(`../json/${frm.file_name}`);
+		FileJson.value = fileJson.default;
+      }
+})
+
+
 
 const handleTouchStart = (event) => {
     startY.value = event.touches[0].clientY
@@ -210,7 +218,9 @@ const loadData = () => {
 
 	doctype.reload()
 	.then(() => {
-		is_active.value=doctype.data[0].is_active
+		if ( doctype.data && doctype.data.length > 0) {
+			is_active.value=doctype.data[0].is_active
+        }
 	})
 
 	
@@ -236,35 +246,25 @@ const loadData = () => {
 			return;
 		}
 
-		Keys.value = DocT.value.data.keys
-		const submitable = createListResource({
-			doctype: 'PWA Form',
-			fields: ['is_submittable'],
-			filters: {
-				doctype_name: route.query.doctype
-			}
-		});
+		Keys.value = DocT.value.data.Keys
+		const isSubmittable = FileJson.value.is_submittable;
 
-		submitable.reload().then(() => {
-			const isSubmittable = submitable.data[0].is_submittable;
-
-			reports.value = DocT.value.data.values.map((row) => {
-				const mappedItem = {};
-				DocT.value.data.keys.forEach((key, index) => {
-					mappedItem[key] = row[index];
-				});
-
-				return {
-					name: mappedItem.name,
-					owner: mappedItem.owner,
-					creation: mappedItem.creation,
-					docstatus: mappedItem.docstatus,
-					workflow_state: is_active.value ? mappedItem.workflow_state : null,
-					amended_from_value: isSubmittable ? 1 : 0,
-				};
+		reports.value = DocT.value.data.values.map((row) => {
+			const mappedItem = {};
+			DocT.value.data.keys.forEach((key, index) => {
+				mappedItem[key] = row[index];
 			});
-			store.setReport(reports.value)
+
+			return {
+				name: mappedItem.name,
+				owner: mappedItem.owner,
+				creation: mappedItem.creation,
+				docstatus: mappedItem.docstatus,
+				workflow_state: is_active.value ? mappedItem.workflow_state : null,
+				amended_from_value: isSubmittable ? 1 : 0,
+			};
 		});
+		store.setReport(reports.value)
 	})
 	.catch(error => {
 		const errorMessage =  error.message || error.response?.data?.message || 'Something went wrong';
