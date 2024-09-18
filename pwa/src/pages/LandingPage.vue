@@ -72,13 +72,17 @@
 	</div>
 </template>
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch , onMounted} from 'vue';
 import User from "../form/components/User.vue";
 import { FeatherIcon, FormControl, createListResource, createResource } from "frappe-ui";
 import { useRouter } from 'vue-router';
 import { retrieveDoc } from '../utils/check';
 import { landingPage } from '../stores/formStore';
-import formList from '../json/form_list.json'
+import formList from '../../public/json/form_list.json'
+// import formList from '../../public/json/form_list.json'
+// import { importAllFiles } from '../utils/check';
+import { retrieveFileJson } from '../utils/check';
+
 
 const store = landingPage();
 const links = ref(store.links);
@@ -105,6 +109,7 @@ const filterValue = ref('')
 const Error = ref()
 const ifError = ref(false)
 
+retrieveFileJson()
 
 const filteredLinks = ref([...links.value]);
 

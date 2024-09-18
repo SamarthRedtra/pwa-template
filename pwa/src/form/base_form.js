@@ -2,9 +2,9 @@ import { reactive, ref, computed, watch } from 'vue';
 import EventEmitter from './eventemiitor';
 import { useRouter } from 'vue-router';
 import { session } from '../data/session';
-// import { exportedData } from '../json/exported-pwaJSON';
-import form from  '../json/form_list.json'
+import formLsit from '../../public/json/form_list.json'
 import { createListResource, createResource, createDocumentResource } from 'frappe-ui';
+import { retrieveFileJson } from '../utils/check';
 
 export default class Form extends EventEmitter {
   constructor(doctype, frm, name = null) {
@@ -44,24 +44,7 @@ export default class Form extends EventEmitter {
     });
   }
 
-  async initFields() {
-    // const doctype_work = createResource({
-    //   url: 'frappe.client.get_list',
-    //       method: 'POST',
-    //       params: {
-    //           doctype: "Workflow",
-    //           filters: {
-    //             "document_type": this.doctype,
-    //           },
-    //           fields: ["*"],
-    //       },
-    // })
-  
-    // doctype_work.reload()
-    // .then(() => {
-    //   console.log(doctype_work.data[0])
-    // })
-  
+  async initFields() {  
     const isworkflow = createListResource({
       doctype: "Workflow",
       fields: ['*'],
@@ -93,12 +76,12 @@ export default class Form extends EventEmitter {
       })
     })
 
-    form.form_list.forEach(async (frm) => {
+    formLsit.form_list.forEach(async (frm) => {
       if (frm.form_name === this.Frm) {
         
-        const fileJson = await import(`../json/${frm.file_name}`);
+        const fileJson = await retrieveFileJson(frm.doctype_name);
         
-        this.JSON = fileJson.default;  
+        this.JSON = fileJson; 
         this.data = this.JSON;
         this.fields = this.JSON.pwa_form_fields;
         this.submitable = this.JSON.is_submittable;

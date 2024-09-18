@@ -75,7 +75,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { FeatherIcon, createListResource, Dialog, Button } from 'frappe-ui'
-import { exportedData } from '../../json/exported-pwaJSON';
+import formList from '../../../public/json/form_list.json'
 import User from './User.vue'; 
 
 const notifications = ref([]);
@@ -87,13 +87,16 @@ const router = useRouter();
 const unRead = ref(false);
 
 
+
+
 const loadData = async () => {
-	const exportedJSON = await exportedData();
-	Object.values(exportedJSON).forEach(values => {
+	formList.form_list.forEach(values => {
 		docwithfrms.value[values.doctype_name] = values.form_name;
 	});
-	const docs = ["Email Queue", ...Object.keys(exportedJSON)];
+	const docs = ["Email Queue"];
+	formList.form_list.forEach((form) => {docs.push(form.doctype_name)})
 
+	
 	const getNotification = createListResource({
 		doctype: 'Notification Log',
 		filters: { document_type: ["in", docs] },

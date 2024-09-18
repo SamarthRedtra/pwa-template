@@ -6,4 +6,5 @@
 </template>
 <script setup>
 import InstallationPromt from './form/components/InstallationPromt.vue';
+
 </script>

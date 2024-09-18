@@ -471,64 +471,65 @@ const filteredFields = computed(() => {
 		}
 	}
 	return result;
-});
+});	
 
 
 const styleClass = computed(() => {
 	if(props.frm.style == 'Success'){
-		return 'bg-green-200 h-[2rem] rounded-2xl text-center';
+		return 'border-green-200 border-[0.5px] ml-2 rounded-2xl text-center';
 	}
 	else if(props.frm.style == 'Danger'){
-		return 'bg-red-200 h-[2rem] rounded-2xl text-center';
+		return 'border-red-200 border-[0.5px] ml-2 rounded-2xl text-center';
 	}
 	else if(props.frm.style == 'Inverse'){
-		return 'bg-black h-[2rem] rounded-2xl text-center';
+		return 'border-black border-[0.5px] ml-2 rounded-2xl text-center';
 	}
 	else if(props.frm.style == 'Warning'){
-		return 'bg-orange-200 h-[2rem] rounded-2xl text-center';
+		return 'border-orange-200 border-[0.5px] ml-2 rounded-2xl text-center';
 	}
 	else if(props.frm.style == 'Info'){
-		return 'bg-blue-200 h-[2rem] rounded-2xl text-center';
+		return 'border-blue-200 border-[0.5px] ml-2 rounded-2xl text-center';
 	}
 	else if(props.frm.style == 'Primary'){
-		return 'bg-[#9fa8da] h-[2rem] rounded-2xl text-center';
+		return 'border-[#9fa8da] border-[0.5px] ml-2 rounded-2xl text-center';
 	}
 	else{
-		return 'bg-gray-200 h-[2rem] rounded-2xl text-center';
+		return 'border-gray-500 border-[0.5px] ml-2 rounded-2xl text-center';
 	}
 })
 
 const styleTextClass = computed(() => {
 	if(props.frm.style == 'Success'){
-		return 'p-2 text-sm w-20 text-green-500';
+		return 'text-sm px-2 max-w-[6rem] truncate text-green-500';
 	}
 	else if(props.frm.style == 'Danger'){
-		return 'p-2 text-sm w-20 text-red-500';
+		return 'text-sm px-2 max-w-[6rem] truncate text-red-500';
 	}
 	else if(props.frm.style == 'Inverse'){
-		return 'p-2 text-sm w-20 text-white';
+		return 'text-sm px-2 max-w-[6rem] truncate text-white';
 	}
 	else if(props.frm.style == 'Warning'){
-		return 'p-2 text-sm w-20 text-orange-500';
+		return 'text-sm px-2 max-w-[6rem] truncate text-orange-500';
 	}
 	else if(props.frm.style == 'Info'){
-		return 'p-2 text-sm w-20 text-blue-500';
+		return 'text-sm px-2 max-w-[6rem] truncate text-blue-500';
 	}
 	else if(props.frm.style == 'Primary'){
-		return 'p-2 text-sm w-20 text-[#1a237e]';
+		return 'text-sm px-2 max-w-[6rem] truncate text-[#1a237e]';
 	}
 	else{
-		return 'p-2 text-sm w-20 text-gray-500';
+		return ' text-sm px-2 max-w-[6rem] truncate text-gray-500';
 	}
 })
 
 const statusText = computed(() => {
-	if(props.frm.submitable == 0){
+	if (props.frm.Saved === 0) {
+		return 'Not Saved';
+	}
+	else if(props.frm.submitable == 0){
 		return '';
 	}
-	else if (props.frm.Saved === 0) {
-		return 'Not Saved';
-	} else if (props.frm.Saved === 1) {
+	 else if (props.frm.Saved === 1) {
 		if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
 			return 'Draft';
 		} else if (props.frm.Docstatus === 2) {
@@ -542,12 +543,13 @@ const statusText = computed(() => {
 });
 
 const statusClass = computed(() => {
-	if(props.frm.submitable == 0){
+	if (props.frm.Saved === 0) {
+		return 'border-red-500 border-[0.5px] rounded-2xl text-center';
+	}
+	else if(props.frm.submitable == 0){
 		return '';
 	}
-	else if (props.frm.Saved === 0) {
-		return 'border-red-500 border-[0.5px] rounded-2xl text-center';
-	} else if (props.frm.Saved === 1) {
+	 else if (props.frm.Saved === 1) {
 		if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
 			return 'border-red-500 border-[0.5px]  mr-1 rounded-2xl text-center';
 		} else if (props.frm.Docstatus === 2) {
@@ -561,12 +563,13 @@ const statusClass = computed(() => {
 });
 
 const statusTextClass = computed(() => {
-	if(props.frm.submitable == 0){
+	if (props.frm.Saved === 0) {
+		return 'px-2 text-sm w-20 text-red-500';
+	}
+	else if(props.frm.submitable == 0){
 		return '';
 	}
-	else if (props.frm.Saved === 0) {
-		return 'px-2 text-sm w-20 text-red-500';
-	} else if (props.frm.Saved === 1) {
+	 else if (props.frm.Saved === 1) {
 		if (props.frm.submitable === 1 && props.frm.Submit !== 1) {
 			return ' px-2 w-fit text-[12px] text-red-600';
 		} else if (props.frm.Docstatus === 2) {

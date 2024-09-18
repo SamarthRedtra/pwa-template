@@ -54,7 +54,6 @@
   const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
   const isInStandaloneMode = () => 'standalone' in window.navigator && window.navigator.standalone;
   
-  // Function to handle the beforeinstallprompt event
   const handleBeforeInstallPrompt = (e) => {
     e.preventDefault();
     deferredPrompt.value = e;
@@ -65,24 +64,20 @@
     }
   };
   
-  // Function to check and set up the install prompt
   const setupInstallPrompt = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   };
   
-  // Function to handle app installed event
   const handleAppInstalled = () => {
     showDialog.value = false;
     deferredPrompt.value = null;
   };
   
-  // Call setupInstallPrompt during component setup
   onMounted(() => {
     setupInstallPrompt();
     window.addEventListener('appinstalled', handleAppInstalled);
   });
   
-  // Function to trigger the install prompt
   const install = async () => {
     deferredPrompt.value.prompt();
     showDialog.value = false;

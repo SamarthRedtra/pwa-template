@@ -122,12 +122,11 @@ import User from "../form/components/User.vue";
 import { useRoute, useRouter } from 'vue-router';
 import List from '../form/components/List.vue';
 import { listPage } from '../stores/formStore';
-import formList from '../json/form_list.json'
+import formList from '../../public/json/form_list.json'
+import { retrieveFileJson } from '../utils/check';
 
 
 const store = listPage()
-
-
 const reports = ref(store.reports);
 const router = useRouter();
 const selectedNumber = ref(20);
@@ -143,11 +142,12 @@ const Keys = ref([])
 const is_active = ref(false)
 const FileJson = ref({})
 
+
 formList.form_list.forEach(async (frm) => {
       if (frm.form_name === route.query.frmname) {
-        const fileJson = await import(`../json/${frm.file_name}`);
-		FileJson.value = fileJson.default;
-      }
+        const fileJson = retrieveFileJson(frm.doctype_name);
+		FileJson.value = fileJson;
+      }	
 })
 
 
@@ -201,70 +201,60 @@ const loadData = () => {
 	const constructedFilters = filter.value.length !== 0 ? filter.value : [];
 	numberOfFilters.value = filter.value.length;
 
-	const doctype = createResource({
-		url: 'frappe.client.get_list',
-        method: 'POST',	
-        params: {
-            doctype: "Workflow",
-			filters: {
-				"document_type": route.query.doctype,
-			},
-			fields: ["is_active"],
-			// cached_timestamp: new Date().toISOString().replace('T', ' ').split('.')[0],
-			// _: Date.now()
-        },
-		ignore_permissions: true
-	})
-
-	doctype.reload()
-	.then(() => {
-		if ( doctype.data && doctype.data.length > 0) {
-			is_active.value=doctype.data[0].is_active
-        }
-	})
-
-	
-	DocT.value = createResource({
-		url: 'frappe.desk.reportview.get',
-		method: 'POST',
-		params: {
+	const Workflow = createResource({
+		url:'pwa_template.utils.get_workFlow',
+		method:'POST',
+		params:{
 			doctype: route.query.doctype,
-			filters: constructedFilters,
-			fields: ["*"],
-			distinct: false,
-			start: 0,
-			page_length: selectedNumber.value,
-		},
-	});
-	DocT.value.fetch().then(() => {
-		if (DocT.value.data == null){
-			reports.value = [];
-            return;
 		}
-		if ( DocT.value.data.length === 0) {
-			reports.value = [];
-			return;
+	})
+	Workflow.reload()
+	.then(() => {
+		if (Workflow.data && Object.keys(Workflow.data).length > 0) {
+			is_active.value = Workflow.data.doc[0].is_active;
 		}
-
-		Keys.value = DocT.value.data.Keys
-		const isSubmittable = FileJson.value.is_submittable;
-
-		reports.value = DocT.value.data.values.map((row) => {
-			const mappedItem = {};
-			DocT.value.data.keys.forEach((key, index) => {
-				mappedItem[key] = row[index];
-			});
-
-			return {
-				name: mappedItem.name,
-				owner: mappedItem.owner,
-				creation: mappedItem.creation,
-				docstatus: mappedItem.docstatus,
-				workflow_state: is_active.value ? mappedItem.workflow_state : null,
-				amended_from_value: isSubmittable ? 1 : 0,
-			};
+		DocT.value = createResource({
+			url: 'frappe.desk.reportview.get',
+			method: 'POST',
+			params: {
+				doctype: route.query.doctype,
+				filters: constructedFilters,
+				fields: ["*"],
+				distinct: false,
+				start: 0,
+				page_length: selectedNumber.value,
+			},
 		});
-		store.setReport(reports.value)
+		DocT.value.fetch().then(() => {
+			if (DocT.value.data == null){
+				reports.value = [];
+				return;
+			}
+			if ( DocT.value.data.length === 0) {
+				reports.value = [];
+				return;
+			}
+	
+			Keys.value = DocT.value.data.Keys
+			const isSubmittable = FileJson.value.is_submittable;
+	
+			reports.value = DocT.value.data.values.map((row) => {
+				const mappedItem = {};
+				DocT.value.data.keys.forEach((key, index) => {
+					mappedItem[key] = row[index];
+				});
+				return {
+					name: mappedItem.name,
+					owner: mappedItem.owner,
+					creation: mappedItem.creation,
+					docstatus: mappedItem.docstatus,
+					workflow_state: is_active.value ? mappedItem.workflow_state : null,
+					amended_from_value: isSubmittable ? 1 : 0,
+					status: is_active.value ? null : mappedItem.status ? mappedItem.status : null, 
+				};
+			});
+			store.setReport(reports.value)
+		})
 	})
 	.catch(error => {
 		const errorMessage =  error.message || error.response?.data?.message || 'Something went wrong';
